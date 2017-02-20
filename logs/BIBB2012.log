@@ -1,0 +1,1224 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  E:\/logs/BIBB2012.log
+  log type:  text
+ opened on:  20 Feb 2017, 14:56:08
+r; t=0.05 14:56:08
+
+. use $git\data\CF_ETB_2012\ETB2012_CampusFile2.0.dta, clear
+r; t=0.61 14:56:08
+
+. numlabel _all, add
+r; t=1.69 14:56:10
+
+. rename *, lower
+r; t=0.02 14:56:10
+
+. *************************************************************************
+. *missing codes?
+. mvdecode _all ,mv(99999 99998)  // u.a. 518
+        f302: 37 missing values generated
+    f518_suf: 2595 missing values generated
+r; t=2.44 14:56:12
+
+. mvdecode f200, mv(97, 99)
+        f200: 553 missing values generated
+r; t=0.00 14:56:12
+
+. mvdecode f301 f303-f325_06 , mv(9)
+        f301: 17 missing values generated
+        f303: 15 missing values generated
+        f304: 11 missing values generated
+        f305: 11 missing values generated
+        f306: 3 missing values generated
+        f307: 3 missing values generated
+        f308: 5 missing values generated
+        f309: 6 missing values generated
+        f310: 21 missing values generated
+        f311: 9 missing values generated
+        f312: 1 missing value generated
+        f313: 6 missing values generated
+        f314: 4 missing values generated
+        f315: 6 missing values generated
+        f316: 9 missing values generated
+        f317: 26 missing values generated
+        f319: 3 missing values generated
+        f320: 6 missing values generated
+        f321: 49 missing values generated
+        f322: 37 missing values generated
+        f323: 167 missing values generated
+        f324: 50 missing values generated
+     f325_01: 3 missing values generated
+     f325_02: 2 missing values generated
+     f325_03: 1 missing value generated
+     f325_04: 1 missing value generated
+     f325_05: 1 missing value generated
+r; t=0.14 14:56:12
+
+. mvdecode f411_?? f500-f509, mv(9)
+     f411_01: 6 missing values generated
+     f411_02: 34 missing values generated
+     f411_03: 17 missing values generated
+     f411_04: 9 missing values generated
+     f411_05: 17 missing values generated
+     f411_06: 10 missing values generated
+     f411_07: 41 missing values generated
+     f411_08: 28 missing values generated
+     f411_09: 8 missing values generated
+     f411_11: 63 missing values generated
+     f411_12: 10 missing values generated
+     f411_13: 30 missing values generated
+        f500: 24 missing values generated
+        f501: 86 missing values generated
+        f502: 54 missing values generated
+        f503: 11 missing values generated
+        f504: 48 missing values generated
+        f505: 69 missing values generated
+        f506: 5 missing values generated
+        f507: 40 missing values generated
+        f508: 20 missing values generated
+        f509: 11 missing values generated
+r; t=0.09 14:56:13
+
+. mvdecode f403_*, mv(9)
+     f403_01: 22 missing values generated
+     f403_02: 17 missing values generated
+     f403_03: 16 missing values generated
+     f403_04: 7 missing values generated
+     f403_05: 13 missing values generated
+     f403_06: 8 missing values generated
+     f403_07: 19 missing values generated
+     f403_08: 16 missing values generated
+     f403_09: 1 missing value generated
+     f403_10: 8 missing values generated
+     f403_11: 6 missing values generated
+r; t=0.08 14:56:13
+
+. mvdecode f519 , mv(9)
+        f519: 469 missing values generated
+r; t=0.00 14:56:13
+
+. mvdecode zpalter, mv(9999)
+     zpalter: 97 missing values generated
+r; t=0.02 14:56:13
+
+. mvdecode eb_berufsabschnitte, mv(-4)
+eb_berufsa~e: 24 missing values generated
+r; t=0.02 14:56:13
+
+. *************************************************************************
+. rename f518_suf                         f518
+r; t=0.00 14:56:13
+
+. rename eb_berufsabschnitte      f100stba_ab             // Beruf KldB 1992
+r; t=0.00 14:56:13
+
+. *************************************************************************
+. sum s1 zpalter f518 f519 f200 az f100stba_ab f1202_korr f303-f318 f411_02 f411_03 f411_04 f411_05 f411_08 f411_09 // see if min-max are reasonable
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+          s1 |     13358     1.52418    .4994337          1          2
+     zpalter |     13261    46.01274    10.69692         15         82
+        f518 |     10763    2870.235    2901.739          1      68000
+        f519 |      2126    1.813735    .3894122          1          2
+        f200 |     11377    34.25868    8.972281          1         83
+-------------+--------------------------------------------------------
+          az |     13326    38.61264    12.26853         10        120
+ f100stba_ab |     13334    24.49618    7.211557          1         33
+  f1202_korr |     12455     1.78619    1.354045         -1         10
+        f303 |     13343    2.635614    .7259023          1          3
+        f304 |     13347    1.880423     .857402          1          3
+-------------+--------------------------------------------------------
+        f305 |     13347    2.388252    .8234753          1          3
+        f306 |     13355    2.454661    .7355669          1          3
+        f307 |     13355    2.305878    .8081456          1          3
+        f308 |     13353    2.249682    .8138426          1          3
+        f309 |     13352    2.452966    .7007739          1          3
+-------------+--------------------------------------------------------
+        f310 |     13337    1.901252    .8400476          1          3
+        f311 |     13349    2.532924    .7021511          1          3
+        f312 |     13357    2.196826     .788865          1          3
+        f313 |     13352    1.603505     .756514          1          3
+        f314 |     13354    1.497604    .7015738          1          3
+-------------+--------------------------------------------------------
+        f315 |     13352    2.703865    .6265468          1          3
+        f316 |     13349    2.572927    .7673796          1          3
+        f317 |     13332     2.44877    .8026291          1          3
+        f318 |     13358    1.433972    .7383273          1          3
+     f411_02 |     13324    2.473431    1.075391          1          4
+-------------+--------------------------------------------------------
+     f411_03 |     13341    1.952477    1.076249          1          4
+     f411_04 |     13349    1.814593     .827409          1          4
+     f411_05 |     13341    2.033131    .8617021          1          4
+     f411_08 |     13330    2.904051    .9576634          1          4
+     f411_09 |     13350    1.587416    .8885571          1          4
+r; t=0.06 14:56:13
+
+. *************************************************************************
+. des zpalter f518 s1 f3* f403_* f411_?? f500-f510 *_siops *_isei08 casmin isced mig  ti_ki sector* branche* 
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+zpalter         int     %18.0g     ZPALTER    Alter der Zielperson
+f518            long    %19.0g     F518_SUF   Wie hoch ist Ihr monatlicher Bruttoverdienst aus Ihrer Tätigkeit?
+s1              byte    %11.0g     S1         Geschlecht
+f301            byte    %15.0g     F301       Haben Sie Mitarbeiter und Mitarbeiterinnen, für die Sie der/die direkte Vorgeset
+f302            long    %19.0g     F302       Anzahl an Mitarbeitern und Mitarbeiterinnen, für welche Sie der direkte Vorgeset
+f303            byte    %15.0g     F303       Häufigkeit von Tätigkeiten: Herstellen, Produzieren von Waren und Gütern
+f304            byte    %15.0g     F304       Häufigkeit von Tätigkeiten: Messen, Prüfen, Qualität kontrollieren
+f305            byte    %15.0g     F305       Häufigkeit von Tätigkeiten: Überwachen, Steuern von Maschinen, Anlagen, technisc
+f306            byte    %15.0g     F306       Häufigkeit von Tätigkeiten: Reparieren, Instandsetzen
+f307            byte    %15.0g     F307       Häufigkeit von Tätigkeiten: Einkaufen, Beschaffen, Verkaufen
+f308            byte    %15.0g     F308       Häufigkeit von Tätigkeiten: Transportieren, Lagern, Versenden
+f309            byte    %15.0g     F309       Häufigkeit von Tätigkeiten: Werben, Marketing, Öffentlichkeitsarbeit, PR
+f310            byte    %15.0g     F310       Häufigkeit von Tätigkeiten: Organisieren, Planen und Vorbereiten von Arbeitsproz
+f311            byte    %15.0g     F311       Häufigkeit von Tätigkeiten: Entwickeln, Forschen, Konstruieren
+f312            byte    %15.0g     F312       Häufigkeit von Tätigkeiten: Ausbilden, Lehren, Unterrichten, Erziehen
+f313            byte    %15.0g     F313       Häufigkeit von Tätigkeiten: Informationen sammeln, Recherchieren, Dokumentieren
+f314            byte    %15.0g     F314       Häufigkeit von Tätigkeiten: Beraten und Informieren
+f315            byte    %15.0g     F315       Häufigkeit von Tätigkeiten: Bewirten, Beherbergen, Speisen bereiten
+f316            byte    %15.0g     F316       Häufigkeit von Tätigkeiten: Pflegen, Betreuen, Heilen
+f317            byte    %15.0g     F317       Häufigkeit von Tätigkeiten: Sichern, Schützen, Bewachen, Überwachen, Verkehr reg
+f318            byte    %15.0g     F318       Häufigkeit von Tätigkeiten: Arbeiten mit Computern
+f319            byte    %15.0g     F319       Häufigkeit von Tätigkeiten: Nutzung des Internet oder E-Mails bearbeiten
+f320            byte    %15.0g     F320       Häufigkeit von Tätigkeiten: Reinigen, Abfall beseitigen, Recyclen
+f321            byte    %16.0g     F321       Häufigkeit von Tätigkeiten: Haben wir eine Tätigkeit vergessen, die Sie häufig a
+f322            byte    %15.0g     F322       Hat Ihre Tätigkeit etwas mit erneuerbaren bzw. regenerativen Energien zu tun?
+f323            byte    %15.0g     F323       Ist Ihr Betrieb in diesem Bereich tätig?
+f324            byte    %35.0g     F324       Nutzen Sie Computer ausschließlich als Anwender oder geht Ihre Nutzung über die
+f325_01         byte    %15.0g     F325_01    Software entwickeln, programmieren, Systemanalyse
+f325_02         byte    %15.0g     F325_02    IT-Technik oder Hardware entwickeln, produzieren
+f325_03         byte    %15.0g     F325_03    IT-Administration z.B. von Netzwerken, IT-Systemen, Datenbanken, Webservern
+f325_04         byte    %15.0g     F325_04    Webseitengestaltung, -betreuung
+f325_05         byte    %15.0g     F325_05    IT-Beratung, Benutzerbetreuung, Schulung
+f325_06         byte    %15.0g     F325_06    IT-Vertrieb
+f325_07         byte    %15.0g     F325_07    Sonstiges
+f326            int     %25.0g     F326       Wie viel Prozent Ihrer Arbeitszeit in Ihrer Tätigkeit verbringen Sie im Durchsch
+f327_01         byte    %15.0g     F327_01    Häufigkeit: Dass Sie auf Probleme reagieren und diese lösen müssen?
+f327_02         byte    %15.0g     F327_02    Häufigkeit: Dass Sie eigenständig schwierige Entscheidungen treffen müssen?
+f327_03         byte    %15.0g     F327_03    Häufigkeit: Dass Sie eigene Wissenslücken erkennen und schließen müssen?
+f327_04         byte    %15.0g     F327_04    Häufigkeit: Dass Sie Verantwortung für andere Personen übernehmen müssen?
+f327_05         byte    %15.0g     F327_05    Häufigkeit: Dass Sie andere überzeugen und Kompromisse aushandeln müssen?
+f327_06         byte    %15.0g     F327_06    Häufigkeit: Dass Sie mit anderen Personen beruflich kommunizieren müssen?
+f403_01         byte    %19.0g     F403_01    Rechtskenntnisse
+f403_02         byte    %19.0g     F403_02    Kenntnisse im Bereich Projektmanagement
+f403_03         byte    %19.0g     F403_03    Kenntnisse im medizinischen oder pflegerischen Bereich
+f403_04         byte    %19.0g     F403_04    Kenntnisse im Bereich Mathematik, Fachrechnen, Statistik
+f403_05         byte    %19.0g     F403_05    Kenntnisse in Deutsch, schriftlicher Ausdruck, Rechtschreibung
+f403_06         byte    %19.0g     F403_06    Grund- oder Fachkenntnisse in PC-Anwendungsprogrammen
+f403_07         byte    %19.0g     F403_07    Technische Kenntnisse
+f403_08         byte    %19.0g     F403_08    Kaufmännische bzw. betriebswirtschaftliche Grund- oder Fachkenntnisse
+f403_09         byte    %19.0g     F403_09    Grund- oder Fachkenntnisse im Bereich erneuerbare bzw. regenerative Energien
+f403_10         byte    %19.0g     F403_10    Grund- oder Fachkenntnisse in Sprachen außer Deutsch
+f403_11         byte    %15.0g     F403_11    Kenntnisse in Englisch
+f411_01         byte    %15.0g     F411_01    Wie Häufigkeit kommt es vor, dass Sie unter starkem Termin- oder Leistungsdruck
+f411_02         byte    %15.0g     F411_02    Wie häufig kommt es vor, dass Ihnen die Arbeitsdurchführung bis in alle Einzelhe
+f411_03         byte    %15.0g     F411_03    Wie häufig kommt es vor, dass sich ein und derselbe Arbeitsgang bis in alle Einz
+f411_04         byte    %15.0g     F411_04    Wie häufig kommt es vor, dass Sie vor neue Aufgaben gestellt werden, in die Sie
+f411_05         byte    %15.0g     F411_05    Wie häufig kommt es vor, dass Sie bisherige Verfahren verbessern oder etwas Neue
+f411_06         byte    %15.0g     F411_06    Wie häufig kommt es vor, dass Sie bei der Arbeit gestört oder unterbrochen werde
+f411_07         byte    %15.0g     F411_07    Wie häufig kommt es vor, dass Ihnen eine Stückzahl, eine Mindestleistung oder di
+f411_08         byte    %15.0g     F411_08    Wie häufig kommt es vor, dass Dinge von Ihnen verlangt werden, die Sie nicht gel
+f411_09         byte    %15.0g     F411_09    Wie häufig kommt es vor, dass Sie verschiedenartige Arbeiten oder Vorgänge gleic
+f411_11         byte    %15.0g     F411_11    Wie häufig kommt es bei Ihrer Arbeit vor, dass kleine Fehler größere finanzielle
+f411_12         byte    %15.0g     F411_12    Wie häufig kommt es vor, dass Sie bis an die Grenzen ihrer Leistungsfähigkeit ge
+f411_13         byte    %15.0g     F411_13    Wie häufig kommt es vor, dass Sie sehr schnell arbeiten müssen?
+f500            byte    %40.0g     F500       Zu welcher der folgenden Gruppen gehören Sie?
+f501            byte    %35.0g     F501       Sind Sie Angestellter...
+f502            byte    %15.0g     F502       Sind Sie Meister, Polier im Angestelltenverhältnis?
+f503            byte    %23.0g     F503       Erledigen Sie Ihre Aufgaben nach Anweisung oder eher selbständig?
+f504            byte    %22.0g     F504       Sind Sie Beamter oder Beamtin im einfachen, mittleren, gehobenen oder höheren Di
+f505            byte    %15.0g     F505       Sind Sie berechtigt, anderen Mitarbeitern fachliche Anweisungen zu erteilen?
+f506            byte    %15.0g     F506       Sind Sie selbständiger Meister?
+f507            byte    %15.0g     F507       Sind Sie gegenwärtig in einem befristeten oder in einem unbefristeten Arbeitsver
+f508            byte    %15.0g     F508       Haben Sie Interesse an einer Entfristung dieses Arbeitsverhältnisses?
+f509            byte    %15.0g     F509       Sind Sie bei einer Zeitarbeitsfirma angestellt, die Sie an andere Unternehmen ve
+f510            int     %18.0g     F510       Seit wann sind Sie bei Ihrem jetzigen Arbeitgeber beschäftigt? Bitte nennen Sie
+eb_siops        byte    %52.0g     siops      SIOPS Erwerbsberuf
+eb1_siops       byte    %52.0g     siops      SIOPS 1. Erwerbsberuf
+vb_siops        byte    %52.0g     siops      SIOPS Erwerbsberuf Vater
+mb_siops        byte    %52.0g     siops      SIOPS Erwerbsberuf Mutter
+eb_isei08       double  %52.0g     mis        ISEI Erwerbsberuf
+eb1_isei08      double  %52.0g     mis        ISEI 1. Erwerbsberuf
+vb_isei08       double  %52.0g     mis        ISEI Erwerbsberuf Vater
+mb_isei08       double  %52.0g     mis        ISEI Erwerbsberuf Mutter
+casmin          byte    %152.0g    casmin     CASMIN
+isced           byte    %68.0g     Isced      ISCED 97
+mig             byte    %20.0g     Mig        Migrationshintergrund
+ti_ki           byte    %50.0g     ti_ki      technological intensity_knowledgeintensive services
+sector03        byte    %64.0g     lsector    Wirtschaftszweige in 21 Kategorien nach WZ2003
+sector08        byte    %64.0g     lsector    Wirtschaftszweige in 21 Kategorien nach WZ2008
+branche03       byte    %51.0g     lbranche   10er-Rekodierung Wirtschaftszweige nach WZ 2003
+branche08       byte    %51.0g     lbranche   10er-Rekodierung Wirtschaftszweige nach WZ 2008
+r; t=0.00 14:56:13
+
+. ****************************************************************************************************
+. do $git\1_data_preparation_skript  2012
+
+. *****************************************************************************************************
+. *sample-selection to avoid selection bias due to employment status (selection into ~)
+. *25-55 years old male fulltime workers
+. *weniger Fälle mit f200 oder mehr Fälle mit az
+. global arbeitszeitdef az // f200 oder az
+r; t=0.00 14:56:13
+
+. gen insample = 1 if $arbeitszeitdef >= 30 & inrange(zpalter, 25, 55) & s1==1 & f200!=.
+(9447 missing values generated)
+r; t=0.00 14:56:13
+
+. tab s1 insample , m
+
+            |       insample
+ Geschlecht |         1          . |     Total
+------------+----------------------+----------
+1. Männlich |     3,911      2,445 |     6,356 
+2. Weiblich |         0      7,002 |     7,002 
+------------+----------------------+----------
+      Total |     3,911      9,447 |    13,358 
+
+r; t=0.00 14:56:13
+
+. sum $arbeitszeitdef zpalter if insample==1, det
+
+        Arbeitszeit aus der umfangreichsten Tätigkeit
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%           30             30
+ 5%           36             30
+10%           38             30       Obs                3908
+25%           40             30       Sum of Wgt.        3908
+
+50%           41                      Mean           43.77764
+                        Largest       Std. Dev.      7.135741
+75%           45             97
+90%           50            100       Variance        50.9188
+95%           60            100       Skewness       2.105814
+99%           70            110       Kurtosis       11.52232
+
+                    Alter der Zielperson
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%           25             25
+ 5%           28             25
+10%           31             25       Obs                3911
+25%           36             25       Sum of Wgt.        3911
+
+50%           44                      Mean           42.71158
+                        Largest       Std. Dev.      8.126504
+75%           49             55
+90%           53             55       Variance       66.04007
+95%           54             55       Skewness      -.3873828
+99%           55             55       Kurtosis        2.10209
+r; t=0.02 14:56:13
+
+. ****************************************************************************************************
+. * 1. Income
+. cap drop ind_interval
+r; t=0.00 14:56:13
+
+. gen      ind_interval     =1    if f519!=.
+(11232 missing values generated)
+r; t=0.00 14:56:13
+
+. recode   ind_interval   . =0    if f518>=0 & f518!=.
+(ind_interval: 10763 changes made)
+r; t=0.02 14:56:13
+
+. * Stundenlohn = Lohn durch vertraglich festgelegten Stundenlohn: Entweder für genaue Angabe oder für
+. *alternative Defintion mit gearbeiteten Stunden.
+. sum f200 az
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+        f200 |     11377    34.25868    8.972281          1         83
+          az |     13326    38.61264    12.26853         10        120
+r; t=0.00 14:56:13
+
+. *******************/
+. gen azm  = $arbeitszeitdef *4.345               // (365/12)/7: tarifliche Normalzeit in Wochen pro Monat, d.h. ein Monat umfasst durchschnittlich 4,345 Wochen
+(32 missing values generated)
+r; t=0.00 14:56:13
+
+. gen wage = f518
+(2595 missing values generated)
+r; t=0.00 14:56:13
+
+. gen hwage=wage/(azm)   
+(2613 missing values generated)
+r; t=0.02 14:56:13
+
+. *some research on wages:
+. list hwage f518 az f200 if hwage<2 // discard people with monethly wage of 1 ?
+
+       +------------------------------+
+       |    hwage   f518    az   f200 |
+       |------------------------------|
+  458. | .9205984    300    75    7.5 |
+  906. |  1.81697    300    38      . |
+ 1381. | 1.265823    165    30     15 |
+ 1990. | 1.841197    200    25     15 |
+ 2178. | .9973149    130    30     30 |
+       |------------------------------|
+ 2227. | 1.397337    255    42      . |
+ 2758. | 1.208285    105    20     20 |
+ 2852. | 1.611047    280    40     40 |
+ 2865. | 1.534331    100    15     12 |
+ 2882. | 1.012658    110    25      7 |
+       |------------------------------|
+ 2987. | .6904488     90    30     30 |
+ 2994. | .8515535    148    40     40 |
+ 3023. | 1.887227    410    50     50 |
+ 3277. | 1.972711    300    35     35 |
+ 3370. | 1.278609    500    90      . |
+       |------------------------------|
+ 3968. | .9205983    120    30     30 |
+ 4222. | 1.294592    180    32     30 |
+ 4226. |  1.04173    172    38   38.5 |
+ 4493. | 1.534331    300    45      . |
+ 4628. | .7671653    100    30      . |
+       |------------------------------|
+ 4806. | 1.673815    400    55      . |
+ 4890. |  .575374    100    40      . |
+ 5133. | 1.380898    180    30     30 |
+ 5267. | 1.227464    160    30     30 |
+ 5322. | 1.121979    195    40     40 |
+       |------------------------------|
+ 5515. | 1.726122    150    20      . |
+ 5981. | 1.168452    330    65      . |
+ 6269. | 1.611047     70    10      . |
+ 6470. | 1.643926    100    14     14 |
+ 6853. | 1.534331    100    15     15 |
+       |------------------------------|
+ 7093. | 1.380898    180    30     30 |
+ 7301. | 1.726122    300    40     40 |
+ 7627. | 1.459485    260    41     41 |
+ 8324. | 1.611047    140    20     20 |
+ 8809. | .0153433      1    15      . |
+       |------------------------------|
+ 9158. | 1.780919    325    42      . |
+ 9207. |  .949367    165    40     33 |
+ 9525. | .6769106     50    17     17 |
+ 9586. | .9589567     50    12      . |
+ 9619. | 1.917913    500    60      . |
+       |------------------------------|
+ 9884. | .4890679     85    40      . |
+ 9892. |  .575374    100    40      . |
+ 9908. | 1.753521    160    21      . |
+10027. | .9205983    120    30     30 |
+10031. | .1917913     25    30     30 |
+       |------------------------------|
+10380. | 1.917913    400    48      . |
+10846. | 1.726122    600    80      . |
+12006. | 1.150748    100    20     20 |
+12227. | .9205984     80    20     20 |
+12501. | 1.388569    181    30     30 |
+       |------------------------------|
+12516. | 1.173763    102    20     15 |
+12547. |  1.55351    135    20     20 |
+12862. | 1.353821    200    34     34 |
+13017. | 1.841197    400    50     15 |
+13070. | 1.573726    253    37     36 |
+       |------------------------------|
+13144. | 1.164286    516   102      . |
+13207. | 1.162372    500    99      . |
+13241. | 1.984048    250    29     29 |
+13263. | .9205983    120    30     30 |
+13303. | 1.917913    500    60      . |
+       +------------------------------+
+r; t=0.00 14:56:13
+
+. tab f518 if f518<100
+
+   Wie hoch ist Ihr |
+        monatlicher |
+Bruttoverdienst aus |
+   Ihrer Tätigkeit? |      Freq.     Percent        Cum.
+--------------------+-----------------------------------
+                  1 |          1       12.50       12.50
+                 25 |          1       12.50       25.00
+                 50 |          2       25.00       50.00
+                 70 |          1       12.50       62.50
+                 80 |          1       12.50       75.00
+                 85 |          1       12.50       87.50
+                 90 |          1       12.50      100.00
+--------------------+-----------------------------------
+              Total |          8      100.00
+r; t=0.00 14:56:13
+
+. gen loghwage = ln(hwage)
+(2613 missing values generated)
+r; t=0.00 14:56:13
+
+. ****************************************************************************************************
+. *25-55 years old male fulltime workers
+. keep if insample == 1
+(9447 observations deleted)
+r; t=0.00 14:56:13
+
+. 
+. gen mt1500=(f519==2)
+r; t=0.00 14:56:13
+
+. gen lt1500=(f519==1)
+r; t=0.00 14:56:13
+
+. 
+. * Wageinfo
+. qui gen     wagemiss = 0 if wage != .                           // nonmissing
+r; t=0.00 14:56:13
+
+. qui replace wagemiss = 1 if wage == . & lt1500 == 1 // missing and wage < 1500
+r; t=0.00 14:56:13
+
+. qui replace wagemiss = 2 if wage == . & mt1500 == 1 // missing and wage > 1500 
+r; t=0.00 14:56:13
+
+. lab def wagemiss 1 "interval < 1500" 2 "interval > 1500" 0 "wage observed", modify
+r; t=0.00 14:56:13
+
+. lab val wagemiss wagemiss
+r; t=0.00 14:56:13
+
+. * lhwage, upper and lower bound (threshold)
+. qui gen lhw = .
+r; t=0.00 14:56:13
+
+. qui gen lhw_upper = .
+r; t=0.00 14:56:13
+
+. qui gen lhw_lower = .
+r; t=0.00 14:56:13
+
+. * For nonmissing observations
+. qui replace lhw = log(hwage) if wagemiss == 0
+r; t=0.00 14:56:13
+
+. qui replace lhw_upper = lhw  if wagemiss == 0 
+r; t=0.02 14:56:13
+
+. qui replace lhw_lower = lhw  if wagemiss == 0
+r; t=0.00 14:56:13
+
+. * For missing observations with wage < 1500
+. qui replace lhw_lower = 0    if wagemiss == 1
+r; t=0.00 14:56:13
+
+. qui replace lhw_upper = log(1500/$arbeitszeitdef) if wagemiss == 1 
+r; t=0.00 14:56:13
+
+. qui replace lhw = lhw_upper  if wagemiss == 1
+r; t=0.00 14:56:13
+
+. * For missing observations mith wage > 1500
+. qui replace lhw_upper = 0    if wagemiss == 2 
+r; t=0.00 14:56:13
+
+. qui replace lhw_lower = log(1500/$arbeitszeitdef) if wagemiss == 2
+r; t=0.00 14:56:13
+
+. qui replace lhw = lhw_lower  if wagemiss == 2
+r; t=0.00 14:56:13
+
+. * graph of distribution including interval wages and with only observed wages
+. graph twoway (kdensity loghwage) (kdensity lhw) , xtitle(ln hourly wage) title(BIBB`1') ///
+>         legend(label(1 "pdf only cont. wages") label(2 "pdf incl. interval wages"))
+r; t=0.55 14:56:13
+
+. graph export $git/graphs/wagedist_uncond_`1'.png , replace width(1000) height(600)
+(note: file E:\/graphs/wagedist_uncond_2012.png not found)
+(file E:\/graphs/wagedist_uncond_2012.png written in PNG format)
+r; t=0.09 14:56:13
+
+. graph export $git/graphs/wagedist_uncond_`1'.pdf , replace 
+(file E:\/graphs/wagedist_uncond_2012.pdf written in PDF format)
+r; t=0.06 14:56:13
+
+. ****************************************************************************************************
+. ****************************************************************************************************
+. *Table 2: Occupational Categories:
+. des f100stba_ab
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+f100stba_ab     float   %52.0g     lberufsabschnitte
+                                              Berufsabschnitte für Erwerbsberuf laut KldB 1992
+r; t=0.00 14:56:13
+
+. tab f100stba_ab
+
+ Berufsabschnitte für Erwerbsberuf laut |
+                              KldB 1992 |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+    1. Land-/Forstwirtschaft, Gartenbau |         56        1.43        1.43
+                           2. Bergleute |          5        0.13        1.56
+3. Steinbearbeitung und Baustoffherstel |          1        0.03        1.59
+                 4. Keramik-/Glasberufe |         11        0.28        1.87
+            5. Chemie-/Kunststoffberufe |         56        1.43        3.30
+            6. Papierherstellung, Druck |         28        0.72        4.02
+                     7. Holzbearbeitung |          4        0.10        4.12
+    8. Metallerzeugung und -bearbeitung |         86        2.20        6.33
+                9. Metall-/Maschinenbau |        342        8.76       15.08
+                      10. Elektroberufe |        187        4.79       19.87
+                          11. Montierer |         45        1.15       21.02
+              12. Textil und Bekleidung |          4        0.10       21.13
+     13. Lederherstellung/-verarbeitung |          5        0.13       21.25
+                          14. Ernährung |         67        1.72       22.97
+                      15. Hoch-/Tiefbau |         69        1.77       24.74
+            16. Ausbauberufe, Polsterer |         47        1.20       25.94
+     17. Holz- und Kunstoffverarbeitung |         46        1.18       27.12
+                   18. Maler, lackierer |         38        0.97       28.09
+    19. Warenprüfer, Versandabfertigung |         38        0.97       29.07
+20. Hilfsarbeiter in der Fertigung o.n. |         14        0.36       29.42
+                       21. Maschinisten |         64        1.64       31.06
+22. Ingenieure,Chemiker,Physiker, Mathe |        217        5.56       36.62
+                          23. Techniker |        345        8.83       45.45
+                     24. Warenkaufleute |        164        4.20       49.65
+           25. Dienstleistungskaufleute |        150        3.84       53.50
+                     26. Verkehrsberufe |        348        8.91       62.41
+                         27. Büroberufe |        808       20.69       83.10
+             28. Ordnung und Sicherheit |        215        5.51       88.60
+29. Schriftwerkschaffende und künstleri |         39        1.00       89.60
+                  30. Gesundheitsberufe |         89        2.28       91.88
+       31. Sozial- und Erziehungsberufe |        229        5.86       97.75
+     32. sonstige Dienstleistungsberufe |         49        1.25       99.00
+             33. sonstige Arbeitskräfte |         39        1.00      100.00
+----------------------------------------+-----------------------------------
+                                  Total |      3,905      100.00
+r; t=0.00 14:56:13
+
+. cap drop occupational_categories*
+r; t=0.00 14:56:13
+
+. recode f100stba_ab (2 3 4 =2) (5 = 3) (6 7 = 4) (8=5) (9=6) (10 11 = 7) (12 13 = 8) (14=9) (15=10) (16=11) (17=12) (18/20 =13) (22= 14) (21 23 = 15) (24= 16) (25=17) (26=18) (27=19) (28/33 
+> = 20) , gen(occupational_categories)
+(3844 differences between f100stba_ab and occupational_categories)
+r; t=0.05 14:56:14
+
+. label def occ1992 1 "Agriculture, Forestry" 2 "Mining, Mineral winning, Stonery, Material production" ///
+>         3 "Chemical industry" 4 "Paper manufacturing, paper converting, printing, wood processing" ///
+>         5 "Metalworking industry"  6 "Metal-structuring, engineering" 7 " Electrical engineering" ///
+>         8 "Apparel industry, leather production and processing" 9 "food industry" ///
+>         10 "Structural and civil engineering" 11 "Lining, upholstering" 12 "Wood- and plastic processing" ///
+>         13 "Painter, Vanisher, unskilled worker" 14 "Chemists, Physicist, Mathematicians" ///
+>         15 "Technical engineers" 16 "Merchants" 17 "Service merchants" 18 "Transport sector" ///
+>         19 "Organisation, Administration" ///
+>         20 "Occupation of order and security, Artist, Health Service, Social and educational occ., other service occ."
+r; t=0.00 14:56:14
+
+. label val occupational_categories occ1992
+r; t=0.00 14:56:14
+
+. tab occupational_categories
+
+RECODE of f100stba_ab (Berufsabschnitte |
+       für Erwerbsberuf laut KldB 1992) |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                  Agriculture, Forestry |         56        1.43        1.43
+Mining, Mineral winning, Stonery, Mater |         17        0.44        1.87
+                      Chemical industry |         56        1.43        3.30
+Paper manufacturing, paper converting,  |         32        0.82        4.12
+                  Metalworking industry |         86        2.20        6.33
+         Metal-structuring, engineering |        342        8.76       15.08
+                 Electrical engineering |        232        5.94       21.02
+Apparel industry, leather production an |          9        0.23       21.25
+                          food industry |         67        1.72       22.97
+       Structural and civil engineering |         69        1.77       24.74
+                   Lining, upholstering |         47        1.20       25.94
+           Wood- and plastic processing |         46        1.18       27.12
+    Painter, Vanisher, unskilled worker |         90        2.30       29.42
+    Chemists, Physicist, Mathematicians |        217        5.56       34.98
+                    Technical engineers |        409       10.47       45.45
+                              Merchants |        164        4.20       49.65
+                      Service merchants |        150        3.84       53.50
+                       Transport sector |        348        8.91       62.41
+           Organisation, Administration |        808       20.69       83.10
+Occupation of order and security, Artis |        660       16.90      100.00
+----------------------------------------+-----------------------------------
+                                  Total |      3,905      100.00
+r; t=0.00 14:56:14
+
+. *f1202_korr  
+. cap drop skilllevel*
+r; t=0.00 14:56:14
+
+. tab f1202_korr
+
+   Art des Ausbildungsabschlusses |
+                       korrigiert |      Freq.     Percent        Cum.
+----------------------------------+-----------------------------------
+      -1. keine eindeutige Angabe |         37        0.99        0.99
+ 1. Betriebliche Berufsausbildung |      2,741       73.56       74.56
+   2. Schulische Berufsausbildung |        138        3.70       78.26
+        3. FachhochschulABschluss |        211        5.66       83.92
+         4. UniversitätsABschluss |        431       11.57       95.49
+             5. Beamtenausbildung |         63        1.69       97.18
+  6. Anderer AusbildungsABschluss |         73        1.96       99.14
+          7. Aufstiegsfortbildung |         31        0.83       99.97
+               10. Berufsakademie |          1        0.03      100.00
+----------------------------------+-----------------------------------
+                            Total |      3,726      100.00
+r; t=0.00 14:56:14
+
+. recode f1202_korr  (-1 6 = 1)  (1 2 5 7=2) (3 4 10=3), gen(skilllevel) 
+(3377 differences between f1202_korr and skilllevel)
+r; t=0.03 14:56:14
+
+. * 7 - Fortbildungsabschlüsse i.d.R. erst nach abgeschlossener Berufsausbildung möglich
+. tab skilllevel, gen(skilllevel_)
+
+  RECODE of |
+ f1202_korr |
+   (Art des |
+Ausbildungs |
+abschlusses |
+korrigiert) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        110        2.95        2.95
+          2 |      2,973       79.79       82.74
+          3 |        643       17.26      100.00
+------------+-----------------------------------
+      Total |      3,726      100.00
+r; t=0.00 14:56:14
+
+. ****************************************************************************************************
+. **Classification of tasks (14? I found 15!)
+. global non_routine                                      f311 f313 
+r; t=0.00 14:56:14
+
+. global non_routine_interactive          f307 f309 f310 f312 f314 
+r; t=0.00 14:56:14
+
+. global routine_cognitive                        f304    
+r; t=0.00 14:56:14
+
+. global routine_manual                           f303 f305 // fehlen 1999: f308 f317 
+r; t=0.00 14:56:14
+
+. *! f308 (Transportieren, Lagern, Versenden) wird bei AFL 2009 aber als task angegeben.
+. * könnte v72 sein. 
+. global non_routine_manual                       f306  f316 // fehlt 1999 f315
+r; t=0.00 14:56:14
+
+. des $non_routine
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+f311            byte    %15.0g     F311       Häufigkeit von Tätigkeiten: Entwickeln, Forschen, Konstruieren
+f313            byte    %15.0g     F313       Häufigkeit von Tätigkeiten: Informationen sammeln, Recherchieren, Dokumentieren
+r; t=0.00 14:56:14
+
+. des $non_routine_interactive
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+f307            byte    %15.0g     F307       Häufigkeit von Tätigkeiten: Einkaufen, Beschaffen, Verkaufen
+f309            byte    %15.0g     F309       Häufigkeit von Tätigkeiten: Werben, Marketing, Öffentlichkeitsarbeit, PR
+f310            byte    %15.0g     F310       Häufigkeit von Tätigkeiten: Organisieren, Planen und Vorbereiten von Arbeitsproz
+f312            byte    %15.0g     F312       Häufigkeit von Tätigkeiten: Ausbilden, Lehren, Unterrichten, Erziehen
+f314            byte    %15.0g     F314       Häufigkeit von Tätigkeiten: Beraten und Informieren
+r; t=0.00 14:56:14
+
+. des $routine_cognitive
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+f304            byte    %15.0g     F304       Häufigkeit von Tätigkeiten: Messen, Prüfen, Qualität kontrollieren
+r; t=0.00 14:56:14
+
+. des $routine_manual
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+f303            byte    %15.0g     F303       Häufigkeit von Tätigkeiten: Herstellen, Produzieren von Waren und Gütern
+f305            byte    %15.0g     F305       Häufigkeit von Tätigkeiten: Überwachen, Steuern von Maschinen, Anlagen, technisc
+r; t=0.00 14:56:14
+
+. des $non_routine_manual
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+f306            byte    %15.0g     F306       Häufigkeit von Tätigkeiten: Reparieren, Instandsetzen
+f316            byte    %15.0g     F316       Häufigkeit von Tätigkeiten: Pflegen, Betreuen, Heilen
+r; t=0.00 14:56:14
+
+. 
+. global num : list sizeof global non_routine
+r; t=0.00 14:56:14
+
+. di $num
+2
+r; t=0.00 14:56:14
+
+. local num : word count global non_routine
+r; t=0.00 14:56:14
+
+. di `num'
+2
+r; t=0.00 14:56:14
+
+. 
+. egen non_routine                                = anycount($non_routine)                         , values(1)
+r; t=0.00 14:56:14
+
+. egen non_routine_interactive    = anycount($non_routine_interactive) , values(1)
+r; t=0.02 14:56:14
+
+. egen routine_cognitive                  = anycount($routine_cognitive           ), values(1)
+r; t=0.00 14:56:14
+
+. egen routine_manual                             = anycount($routine_manual                      ), values(1)
+r; t=0.00 14:56:14
+
+. egen non_routine_manual                 = anycount($non_routine_manual          ), values(1)
+r; t=0.02 14:56:14
+
+. global task_vars non_routine  non_routine_interactive  routine_cognitive  routine_manual  non_routine_manual            
+r; t=0.00 14:56:14
+
+. egen tasks_total_ind = rowtotal($task_vars)
+r; t=0.00 14:56:14
+
+. *recode $task_vars . = 0 // general index.
+. 
+. *Task-Indecies
+. *SO ("objective")   - Spitz-Oener Index
+. *intensity per task category (#of task per category by individual) given total number of activities
+. *in category j.
+. gen index_so_1 = non_routine                            / 2     
+r; t=0.00 14:56:14
+
+. gen index_so_2 = non_routine_interactive        / 5
+r; t=0.00 14:56:14
+
+. gen index_so_3 = routine_cognitive                      / 1
+r; t=0.00 14:56:14
+
+. gen index_so_4 = routine_manual                         / 4     
+r; t=0.00 14:56:14
+
+. gen index_so_5 = non_routine_manual                     / 3     
+r; t=0.00 14:56:14
+
+. 
+. egen cum_so_index = rowtotal(index_so_?)
+r; t=0.02 14:56:14
+
+. 
+. *AFL ("objective")  - Antonczyk, Fitzenberger, Leuschner- Index 
+. *intensity per task category (#of tasks per category) given total tasks of indiviudal
+. gen index_afl_1 = non_routine                           / tasks_total_ind               
+(187 missing values generated)
+r; t=0.00 14:56:14
+
+. gen index_afl_2 = non_routine_interactive       / tasks_total_ind
+(187 missing values generated)
+r; t=0.00 14:56:14
+
+. gen index_afl_3 = routine_cognitive                     / tasks_total_ind
+(187 missing values generated)
+r; t=0.00 14:56:14
+
+. gen index_afl_4 = routine_manual                        / tasks_total_ind       
+(187 missing values generated)
+r; t=0.00 14:56:14
+
+. gen index_afl_5 = non_routine_manual            / tasks_total_ind       
+(187 missing values generated)
+r; t=0.00 14:56:14
+
+. 
+. egen cum_afl_index = rowtotal(index_afl_?)
+r; t=0.00 14:56:14
+
+. *NJC ("objective") job complexity - total number of task
+. gen njc = tasks_total_ind
+r; t=0.00 14:56:14
+
+. 
+. *SJC ("subjective") - Subjective Job Complexity
+. /*
+> jr1 - Wie häufig ist Ihnen die Arbeitsdurchführung bis ins Einzelne vorgeschrieben?
+> jr2 - Wie häufig wiederholt sich derselbe Arbeitsgang bis in alle Einzelheiten?
+> jr3 - Wie häufig werden Sie vor neue Aufgaben gestellt, in die Sie sich erst hineindenken und einarbeiten müssen?
+> jr4 - Wie häufig verbessern Sie bisherige Verfahren oder probieren etwas Neues aus?
+> jr5 - Wie häufig werden Dinge von Ihnen verlangt, die Sie nicht gelernt haben oder nicht beherschen?
+> jr6 - Wie häufig müssen Sie verschiedenartige Arbeiten/Vorgänge gleichzeitig im Auge behalten?
+> */
+. tab1 f411_02 f411_03 f411_04 f411_05 f411_08 f411_09
+
+-> tabulation of f411_02  
+
+     Wie häufig |
+  kommt es vor, |
+ dass Ihnen die |
+Arbeitsdurchfüh |
+    rung bis in |
+  alle Einzelhe |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+      1. Häufig |        951       24.38       24.38
+    2. Manchmal |      1,115       28.58       52.96
+      3. Selten |      1,143       29.30       82.26
+         4. Nie |        692       17.74      100.00
+----------------+-----------------------------------
+          Total |      3,901      100.00
+
+-> tabulation of f411_03  
+
+     Wie häufig |
+  kommt es vor, |
+  dass sich ein |
+   und derselbe |
+Arbeitsgang bis |
+   in alle Einz |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+      1. Häufig |      1,609       41.17       41.17
+    2. Manchmal |        924       23.64       64.82
+      3. Selten |        861       22.03       86.85
+         4. Nie |        514       13.15      100.00
+----------------+-----------------------------------
+          Total |      3,908      100.00
+
+-> tabulation of f411_04  
+
+     Wie häufig |
+  kommt es vor, |
+   dass Sie vor |
+  neue Aufgaben |
+       gestellt |
+ werden, in die |
+           Sie  |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+      1. Häufig |      1,841       47.11       47.11
+    2. Manchmal |      1,476       37.77       84.88
+      3. Selten |        474       12.13       97.01
+         4. Nie |        117        2.99      100.00
+----------------+-----------------------------------
+          Total |      3,908      100.00
+
+-> tabulation of f411_05  
+
+     Wie häufig |
+  kommt es vor, |
+       dass Sie |
+      bisherige |
+      Verfahren |
+verbessern oder |
+     etwas Neue |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+      1. Häufig |      1,217       31.14       31.14
+    2. Manchmal |      1,820       46.57       77.71
+      3. Selten |        659       16.86       94.58
+         4. Nie |        212        5.42      100.00
+----------------+-----------------------------------
+          Total |      3,908      100.00
+
+-> tabulation of f411_08  
+
+     Wie häufig |
+  kommt es vor, |
+ dass Dinge von |
+ Ihnen verlangt |
+werden, die Sie |
+      nicht gel |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+      1. Häufig |        324        8.30        8.30
+    2. Manchmal |      1,271       32.57       40.88
+      3. Selten |      1,215       31.14       72.01
+         4. Nie |      1,092       27.99      100.00
+----------------+-----------------------------------
+          Total |      3,902      100.00
+
+-> tabulation of f411_09  
+
+     Wie häufig |
+  kommt es vor, |
+       dass Sie |
+verschiedenarti |
+    ge Arbeiten |
+  oder Vorgänge |
+          gleic |      Freq.     Percent        Cum.
+----------------+-----------------------------------
+      1. Häufig |      2,433       62.26       62.26
+    2. Manchmal |        929       23.77       86.03
+      3. Selten |        344        8.80       94.83
+         4. Nie |        202        5.17      100.00
+----------------+-----------------------------------
+          Total |      3,908      100.00
+r; t=0.02 14:56:14
+
+. des f411_02 f411_03 f411_04 f411_05 f411_08 f411_09 , varlist
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+f411_02         byte    %15.0g     F411_02    Wie häufig kommt es vor, dass Ihnen die Arbeitsdurchführung bis in alle Einzelhe
+f411_03         byte    %15.0g     F411_03    Wie häufig kommt es vor, dass sich ein und derselbe Arbeitsgang bis in alle Einz
+f411_04         byte    %15.0g     F411_04    Wie häufig kommt es vor, dass Sie vor neue Aufgaben gestellt werden, in die Sie
+f411_05         byte    %15.0g     F411_05    Wie häufig kommt es vor, dass Sie bisherige Verfahren verbessern oder etwas Neue
+f411_08         byte    %15.0g     F411_08    Wie häufig kommt es vor, dass Dinge von Ihnen verlangt werden, die Sie nicht gel
+f411_09         byte    %15.0g     F411_09    Wie häufig kommt es vor, dass Sie verschiedenartige Arbeiten oder Vorgänge gleic
+r; t=0.00 14:56:14
+
+. local i = 1 
+r; t=0.00 14:56:14
+
+. cap drop jr_?
+r; t=0.00 14:56:14
+
+. foreach var in `r(varlist)' {
+  2.         di "job requirement `i' corresponds to `var'"
+  3.         recode `var' 1 2 = 1 3 4 = 0 9= . , gen(jr_`i')
+  4.         local i = `i' + 1
+  5. }
+job requirement 1 corresponds to f411_02
+(2950 differences between f411_02 and jr_1)
+job requirement 2 corresponds to f411_03
+(2299 differences between f411_03 and jr_2)
+job requirement 3 corresponds to f411_04
+(2067 differences between f411_04 and jr_3)
+job requirement 4 corresponds to f411_05
+(2691 differences between f411_05 and jr_4)
+job requirement 5 corresponds to f411_08
+(3578 differences between f411_08 and jr_5)
+job requirement 6 corresponds to f411_09
+(1475 differences between f411_09 and jr_6)
+r; t=0.09 14:56:14
+
+. gen sjc = (-1) * jr_1 + (-1) *jr_2 + jr_3 + jr_4 + jr_5 + jr_6
+(23 missing values generated)
+r; t=0.00 14:56:14
+
+. list sjc jr_? in 1/10
+
+     +-----------------------------------------------+
+     | sjc   jr_1   jr_2   jr_3   jr_4   jr_5   jr_6 |
+     |-----------------------------------------------|
+  1. |   2      1      1      1      1      1      1 |
+  2. |   2      0      1      1      1      0      1 |
+  3. |   1      1      1      1      1      0      1 |
+  4. |   3      0      1      1      1      1      1 |
+  5. |   4      0      0      1      1      1      1 |
+     |-----------------------------------------------|
+  6. |   1      1      1      1      1      0      1 |
+  7. |   2      1      1      1      1      1      1 |
+  8. |   4      0      0      1      1      1      1 |
+  9. |   1      1      1      1      1      0      1 |
+ 10. |   3      0      0      1      1      0      1 |
+     +-----------------------------------------------+
+r; t=0.00 14:56:14
+
+. sum sjc njc 
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+         sjc |      3888    1.717335    1.369891         -2          4
+         njc |      3911    3.635132     2.02354          0         11
+r; t=0.02 14:56:14
+
+. ****************************************************************************************************
+. *Computer use
+. recode f318 2 3= 0 , gen(pcuse)  // nur Angabe häufig (1) wird gezählt, da sonst nicht 
+(1079 differences between f318 and pcuse)
+r; t=0.00 14:56:14
+
+. 
+. 
+end of do-file
+r; t=1.03 14:56:14
+
+. do $git\2_estimator_interval_regression.do
+
+. *** Content ************************************************************
+. * Interval regression Estimator 
+. * for robustness specify when using the model "pw" weights 
+. ************************************************************************* 
+. * Model in Latex:
+. * $ \sum_i g_i log(L_i) $
+. * $ L_i = \left[\frac{1}{\sigma_i} \varphi \left( \frac{log(w_i)-\beta_0-X_i^\prime \beta}{\sigma_i} \right)\right]^{I_i = 0}
+. * \cdot \left[ \Phi \left( \frac{log(b_i)-\beta_0-X_i^\prime \beta}{\sigma_i} \right)   
+. *                        - \Phi \left( \frac{log(a_i)-\beta_0-X_i^\prime \beta}{\sigma_i} \right)       
+. *\right]^{I_i = 1} $
+. * $ \sigma_i = exp(\gamma_0 + X_i^\prime \gamma_1) $
+. * $ g_i  $ population weights provided by the data (Independent of missing values?)
+. ****************************************************************************************************
+. cap pro drop myestimator
+r; t=0.00 14:56:14
+
+. program myestimator 
+  1.     version 12.1
+  2.     args lnf xb lnsigma
+  3.         *uses ln(normal)
+.     qui replace `lnf' = -`lnsigma' + lnnormalden(($ML_y1 - `xb')/(exp(`lnsigma')))      if wagemiss==0
+  4.         *beide Varianten geben das gleiche Ergebnis (vgl. abhängige Variablen -> gespeichertes Erg)
+.         *variante 1
+.         *qui replace `lnf' = ln(normal((lhw_upper - `xb')/(exp(`lnsigma')))      -  0)  if wagemiss==1
+.         *qui replace `lnf' = ln(1  - normal((lhw_lower - `xb')/(exp(`lnsigma'))))       if wagemiss==2
+.         * variante 2
+.         qui replace `lnf' = ln(normal(($ML_y1 - `xb')/(exp(`lnsigma'))) - 0)    if wagemiss==1
+  5.         qui replace `lnf' = ln(1 - normal(($ML_y1 - `xb')/(exp(`lnsigma'))))    if wagemiss==2
+  6.  end
+r; t=0.00 14:56:14
+
+.  
+. *http://www.stata.com/support/faqs/statistics/maximum-likelihood-estimation/
+. 
+end of do-file
+r; t=0.00 14:56:14
+
+. **************************************************************************
+. *keep if lhw != .
+. gen cond = 1 if lhw!=. & insample==1
+(92 missing values generated)
+r; t=0.00 14:56:14
+
+. des des2012 gew2012 gew2012_hr gew2012_hr_cf
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+des2012         double  %12.0g                Designgewichtungsfaktor 2012
+gew2012         double  %12.0g                Gewichtungsfaktor 2012
+gew2012_hr      double  %12.0g                Hochrechnungsfaktor auf Basis des MZ11
+gew2012_hr_cf   float   %9.0g                 Hochrechnungsfaktor Campus-File 2012
+r; t=0.00 14:56:14
+
+. sum des2012 gew2012 gew2012_hr gew2012_hr_cf
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+     des2012 |      3911    .9880575    .6012027       .116      4.421
+     gew2012 |      3911    1.189819    .9479704       .196      4.703
+  gew2012_hr |      3911    2134.498    1700.629   351.6178   8437.033
+gew2012_hr~f |      3911    3187.587    1740.126   956.1336   10014.59
+r; t=0.00 14:56:14
+
+. gen gew = gew2012_hr_cf
+r; t=0.00 14:56:14
+
+. *****************************************************************************************
+. global all hwage lhw* wagemiss skilllevel zpalter occupational_categories index_afl_? njc sjc pcuse cond gew  index_so_? $task_vars
+r; t=0.00 14:56:14
+
+. order $all 
+r; t=0.05 14:56:14
+
+. keep  $all 
+r; t=0.00 14:56:14
+
+. save $git\data\bibb2012_constructs.dta  , replace 
+file E:\\data\bibb2012_constructs.dta saved
+r; t=0.11 14:56:14
+
+. **************************************************************************
+. *robust estimation by specifying 
+. ml model lf myestimator (mu: lhw = (b2.skilllevel)##(c.zpalter##c.zpalter) b13.occupational_categories index_afl_1 - index_afl_4 njc sjc pcuse)  (lnsigma:  c.zpalter##c.zpalter b2.skillleve
+> l index_afl_1 - index_afl_4 njc sjc pcuse) if cond==1  [pw=gew]
+r; t=0.14 14:56:14
+
+. ml maximize
+
+initial:       log pseudolikelihood =  -57770091
+alternative:   log pseudolikelihood =  -27392694
+rescale:       log pseudolikelihood =  -22446873
+rescale eq:    log pseudolikelihood =  -16234158
+Iteration 0:   log pseudolikelihood =  -16234158  (not concave)
+Iteration 1:   log pseudolikelihood =  -10985713  
+Iteration 2:   log pseudolikelihood = -8889768.1  
+Iteration 3:   log pseudolikelihood = -8726551.8  
+Iteration 4:   log pseudolikelihood = -8363513.6  
+Iteration 5:   log pseudolikelihood = -8359789.2  
+Iteration 6:   log pseudolikelihood = -8359772.5  
+Iteration 7:   log pseudolikelihood = -8359772.5  
+
+                                                  Number of obs   =       3452
+                                                  Wald chi2(34)   =     759.62
+Log pseudolikelihood = -8359772.5                 Prob > chi2     =     0.0000
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                                                           |               Robust
+                                                                                                       lhw |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-----------------------------------------------------------------------------------------------------------+----------------------------------------------------------------
+mu                                                                                                         |
+                                                                                                skilllevel |
+                                                                                                        1  |    -1.7441   1.364898    -1.28   0.201     -4.41925    .9310504
+                                                                                                        3  |  -.4172972   .5951297    -0.70   0.483     -1.58373    .7491356
+                                                                                                           |
+                                                                                                   zpalter |   .0608167    .013271     4.58   0.000      .034806    .0868275
+                                                                                                           |
+                                                                                       c.zpalter#c.zpalter |  -.0006009   .0001623    -3.70   0.000    -.0009191   -.0002827
+                                                                                                           |
+                                                                                      skilllevel#c.zpalter |
+                                                                                                        1  |   .0718561   .0689667     1.04   0.297    -.0633161    .2070282
+                                                                                                        3  |   .0235869   .0302583     0.78   0.436    -.0357183    .0828921
+                                                                                                           |
+                                                                            skilllevel#c.zpalter#c.zpalter |
+                                                                                                        1  |  -.0007584   .0008319    -0.91   0.362    -.0023889    .0008721
+                                                                                                        3  |  -.0001927   .0003737    -0.52   0.606    -.0009252    .0005398
+                                                                                                           |
+                                                                                   occupational_categories |
+                                                                                    Agriculture, Forestry  |  -.0857581   .1034639    -0.83   0.407    -.2885436    .1170274
+                                                    Mining, Mineral winning, Stonery, Material production  |  -.0563317   .2026123    -0.28   0.781    -.4534444     .340781
+                                                                                        Chemical industry  |   .1253846   .0922425     1.36   0.174    -.0554075    .3061766
+                                         Paper manufacturing, paper converting, printing, wood processing  |    .187073   .1552052     1.21   0.228    -.1171237    .4912697
+                                                                                    Metalworking industry  |   .1086728   .0880644     1.23   0.217    -.0639304    .2812759
+                                                                           Metal-structuring, engineering  |   .1433013   .0777722     1.84   0.065    -.0091294     .295732
+                                                                                   Electrical engineering  |   .0896098    .081797     1.10   0.273    -.0707093     .249929
+                                                      Apparel industry, leather production and processing  |   -.082227    .115856    -0.71   0.478    -.3093006    .1448465
+                                                                                            food industry  |  -.1172525   .0885671    -1.32   0.186    -.2908408    .0563359
+                                                                         Structural and civil engineering  |   .0958431   .1035704     0.93   0.355    -.1071511    .2988374
+                                                                                     Lining, upholstering  |    .109005   .1067483     1.02   0.307    -.1002177    .3182278
+                                                                             Wood- and plastic processing  |  -.1195153   .0868131    -1.38   0.169    -.2896659    .0506353
+                                                                      Chemists, Physicist, Mathematicians  |   .3289365   .0867224     3.79   0.000     .1589637    .4989092
+                                                                                      Technical engineers  |   .1601394   .0767504     2.09   0.037     .0097114    .3105673
+                                                                                                Merchants  |   .1058765   .0903912     1.17   0.241     -.071287    .2830399
+                                                                                        Service merchants  |   .1698319   .0877047     1.94   0.053    -.0020662      .34173
+                                                                                         Transport sector  |  -.1568028   .0810636    -1.93   0.053    -.3156845    .0020789
+                                                                             Organisation, Administration  |   .1902005   .0775556     2.45   0.014     .0381943    .3422068
+Occupation of order and security, Artist, Health Service, Social and educational occ., other service occ.  |   .0107675   .0763552     0.14   0.888     -.138886     .160421
+                                                                                                           |
+                                                                                               index_afl_1 |   .2451409   .0773523     3.17   0.002     .0935332    .3967486
+                                                                                               index_afl_2 |   .1645214   .0639434     2.57   0.010     .0391947    .2898481
+                                                                                               index_afl_3 |    .004642   .0768371     0.06   0.952     -.145956      .15524
+                                                                                               index_afl_4 |   .1454645   .0722542     2.01   0.044     .0038487    .2870802
+                                                                                                       njc |   .0082283   .0062258     1.32   0.186    -.0039741    .0204307
+                                                                                                       sjc |   .0273689   .0085247     3.21   0.001     .0106607     .044077
+                                                                                                     pcuse |   .1457286   .0302496     4.82   0.000     .0864404    .2050168
+                                                                                                     _cons |   1.032431   .2717214     3.80   0.000     .4998664    1.564995
+-----------------------------------------------------------------------------------------------------------+----------------------------------------------------------------
+lnsigma                                                                                                    |
+                                                                                                   zpalter |   .0286303   .0290799     0.98   0.325    -.0283653    .0856259
+                                                                                                           |
+                                                                                       c.zpalter#c.zpalter |  -.0002721   .0003539    -0.77   0.442    -.0009657    .0004216
+                                                                                                           |
+                                                                                                skilllevel |
+                                                                                                        1  |  -.0372936   .1195059    -0.31   0.755    -.2715208    .1969336
+                                                                                                        3  |   .0605123   .0828284     0.73   0.465    -.1018284    .2228531
+                                                                                                           |
+                                                                                               index_afl_1 |   .1140989   .1543347     0.74   0.460    -.1883916    .4165894
+                                                                                               index_afl_2 |  -.0005343   .1284612    -0.00   0.997    -.2523137    .2512451
+                                                                                               index_afl_3 |   -.050183   .1631349    -0.31   0.758    -.3699216    .2695556
+                                                                                               index_afl_4 |  -.0339196   .1366815    -0.25   0.804    -.3018105    .2339712
+                                                                                                       njc |   .0036501   .0113096     0.32   0.747    -.0185163    .0258164
+                                                                                                       sjc |  -.0184142   .0174289    -1.06   0.291    -.0525743    .0157459
+                                                                                                     pcuse |  -.0621935   .0516762    -1.20   0.229     -.163477    .0390901
+                                                                                                     _cons |  -1.347829   .6035713    -2.23   0.026    -2.530807   -.1648508
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+r; t=2.16 14:56:16
+
+. est store bibb2012_reg
+r; t=0.00 14:56:16
+
+. log close 
+      name:  <unnamed>
+       log:  E:\/logs/BIBB2012.log
+  log type:  text
+ closed on:  20 Feb 2017, 14:56:16
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

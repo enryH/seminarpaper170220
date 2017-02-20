@@ -1,0 +1,1673 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  E:\/logs/3_1_analysis_descriptives.log
+  log type:  text
+ opened on:  20 Feb 2017, 14:56:16
+r; t=0.03 14:56:16
+
+. use $git\data\bibb2006_constructs.dta, clear
+r; t=0.02 14:56:16
+
+. append using $git\data\bibb2012_constructs.dta , gen(bibb2012)
+(note: variable zpalter was byte, now int to accommodate using data's values)
+(note: variable occupational_categories was byte, now float to accommodate using data's values)
+(label occ1992 already defined)
+(label wagemiss already defined)
+r; t=0.02 14:56:16
+
+. append using $git\data\bibb1999_constructs.dta , gen(bibb1999)
+r; t=0.08 14:56:16
+
+. keep if cond==1 
+(9851 observations deleted)
+r; t=0.02 14:56:16
+
+. tab bibb2012 bibb1999 , m
+
+           |       bibb1999
+  bibb2012 |         0          1 |     Total
+-----------+----------------------+----------
+         0 |     4,593          0 |     4,593 
+         1 |     3,819          0 |     3,819 
+         . |         0      7,679 |     7,679 
+-----------+----------------------+----------
+     Total |     8,412      7,679 |    16,091 
+
+r; t=0.00 14:56:16
+
+. replace bibb1999 = . if bibb2012==0 & bibb1999==0 // seperate 2006 observations
+(4593 real changes made, 4593 to missing)
+r; t=0.00 14:56:16
+
+. tab bibb2012 bibb1999 , m
+
+           |             bibb1999
+  bibb2012 |         0          1          . |     Total
+-----------+---------------------------------+----------
+         0 |         0          0      4,593 |     4,593 
+         1 |     3,819          0          0 |     3,819 
+         . |         0      7,679          0 |     7,679 
+-----------+---------------------------------+----------
+     Total |     3,819      7,679      4,593 |    16,091 
+
+r; t=0.00 14:56:16
+
+. *overall year variable:
+. recode bibb2012 (0=1) (1=2) (.=0), gen(bibb) 
+(16091 differences between bibb2012 and bibb)
+r; t=0.05 14:56:16
+
+. do $git\2_estimator_interval_regression
+
+. *** Content ************************************************************
+. * Interval regression Estimator 
+. * for robustness specify when using the model "pw" weights 
+. ************************************************************************* 
+. * Model in Latex:
+. * $ \sum_i g_i log(L_i) $
+. * $ L_i = \left[\frac{1}{\sigma_i} \varphi \left( \frac{log(w_i)-\beta_0-X_i^\prime \beta}{\sigma_i} \right)\right]^{I_i = 0}
+. * \cdot \left[ \Phi \left( \frac{log(b_i)-\beta_0-X_i^\prime \beta}{\sigma_i} \right)   
+. *                        - \Phi \left( \frac{log(a_i)-\beta_0-X_i^\prime \beta}{\sigma_i} \right)       
+. *\right]^{I_i = 1} $
+. * $ \sigma_i = exp(\gamma_0 + X_i^\prime \gamma_1) $
+. * $ g_i  $ population weights provided by the data (Independent of missing values?)
+. ****************************************************************************************************
+. cap pro drop myestimator
+r; t=0.00 14:56:16
+
+. program myestimator 
+  1.     version 12.1
+  2.     args lnf xb lnsigma
+  3.         *uses ln(normal)
+.     qui replace `lnf' = -`lnsigma' + lnnormalden(($ML_y1 - `xb')/(exp(`lnsigma')))      if wagemiss==0
+  4.         *beide Varianten geben das gleiche Ergebnis (vgl. abhängige Variablen -> gespeichertes Erg)
+.         *variante 1
+.         *qui replace `lnf' = ln(normal((lhw_upper - `xb')/(exp(`lnsigma')))      -  0)  if wagemiss==1
+.         *qui replace `lnf' = ln(1  - normal((lhw_lower - `xb')/(exp(`lnsigma'))))       if wagemiss==2
+.         * variante 2
+.         qui replace `lnf' = ln(normal(($ML_y1 - `xb')/(exp(`lnsigma'))) - 0)    if wagemiss==1
+  5.         qui replace `lnf' = ln(1 - normal(($ML_y1 - `xb')/(exp(`lnsigma'))))    if wagemiss==2
+  6.  end
+r; t=0.00 14:56:16
+
+.  
+. *http://www.stata.com/support/faqs/statistics/maximum-likelihood-estimation/
+. 
+end of do-file
+r; t=0.00 14:56:16
+
+. gen placeholder = 1
+r; t=0.00 14:56:16
+
+. *some additional Labels (especially for year dummies)
+. label def bibb2012 1 "2012" 0 "2006" , modify
+r; t=0.00 14:56:16
+
+. lab val bibb2012 bibb2012
+r; t=0.00 14:56:16
+
+. label def bibb1999 1 "1999" 0 "2012" , modify
+r; t=0.00 14:56:16
+
+. lab val bibb1999 bibb1999
+r; t=0.00 14:56:16
+
+. label def bibb 0 "1999" 1 "2006" 2 "2012", modify 
+r; t=0.00 14:56:16
+
+. lab val bibb bibb
+r; t=0.00 14:56:16
+
+. lab var bibb "survey year"
+r; t=0.00 14:56:16
+
+. tab bibb2012 bibb1999 , m
+
+           |             bibb1999
+  bibb2012 |      2012       1999          . |     Total
+-----------+---------------------------------+----------
+      2006 |         0          0      4,593 |     4,593 
+      2012 |     3,819          0          0 |     3,819 
+         . |         0      7,679          0 |     7,679 
+-----------+---------------------------------+----------
+     Total |     3,819      7,679      4,593 |    16,091 
+
+r; t=0.00 14:56:16
+
+. lab var skilllevel "skilllevel (low, medium, high)"
+r; t=0.00 14:56:16
+
+. lab def skill 1 "low" 2 "medium" 3 "high" , modify
+r; t=0.00 14:56:16
+
+. lab val skilllevel skill
+r; t=0.00 14:56:16
+
+. ****************************************************************************************************
+. ****************************************************************************************************
+. ****************************************************************************************************
+. *Descriptives 
+. graph twoway (kdensity lhw if bibb2012==0 [aw=gew]) (kdensity lhw if bibb2012==1 [aw=gew]) ///
+>                          (kdensity lhw if bibb1999==1 [aw=gew]) , ///
+>                                 xtitle(ln hourly wage) ytitle(density) name(income_pdfs, replace) ///
+>                                 title(log. hourly wage distribution) ///
+>                                 legend(label(1 "uncond. lhw 2006") label(2 "uncond. lhw 2012" ) ///
+>                                 label(3 "uncond. lhw 1999")) ///
+>                                 xscale(range(-2/6)) yscale(range(0/1.6))
+r; t=0.93 14:56:17
+
+. graph export $git\graphs\income_pdfs_uncond.png , replace  width(1000) height(750) 
+(file E:\\graphs\income_pdfs_uncond.png written in PNG format)
+r; t=0.14 14:56:17
+
+. graph export $git\graphs\income_pdfs_uncond.pdf , replace  
+(file E:\\graphs\income_pdfs_uncond.pdf written in PDF format)
+r; t=0.08 14:56:18
+
+. *** regressions are based hardly on interval coded observation with less than 1500 monthly income:
+. tab wagemiss bibb2012 // only 2006 and 2012
+
+                |       bibb2012
+       wagemiss |      2006       2012 |     Total
+----------------+----------------------+----------
+  wage observed |     4,022      3,251 |     7,273 
+interval < 1500 |        35         23 |        58 
+interval > 1500 |       536        545 |     1,081 
+----------------+----------------------+----------
+          Total |     4,593      3,819 |     8,412 
+
+r; t=0.00 14:56:18
+
+. recode wagemiss 2 = 1 , gen(wageinfo)
+(1081 differences between wagemiss and wageinfo)
+r; t=0.03 14:56:18
+
+. label def wageinfo 0 "cont. observed" 1 "interval coded"
+r; t=0.00 14:56:18
+
+. lab val wageinfo wageinfo
+r; t=0.00 14:56:18
+
+. lab var wageinfo "wages are:"
+r; t=0.00 14:56:18
+
+. tab wageinfo bibb
+
+               |           survey year
+    wages are: |      1999       2006       2012 |     Total
+---------------+---------------------------------+----------
+cont. observed |         0      4,022      3,251 |     7,273 
+interval coded |     7,679        571        568 |     8,818 
+---------------+---------------------------------+----------
+         Total |     7,679      4,593      3,819 |    16,091 
+
+r; t=0.00 14:56:18
+
+. ****************************************************************************************************
+. *** Table 7: AFL-Index (averages) by skill-group for years 2006 and 2012
+. global task_vars non_routine  non_routine_interactive  routine_cognitive  routine_manual  non_routine_manual            
+r; t=0.00 14:56:18
+
+. table placeholder bibb2012 skilllevel [aw=gew], c(mean non_routine mean non_routine_interactive  ///
+>                                                          mean routine_cognitive mean routine_manual mean non_routine_manual) ///
+>                                                          format(%7.3f) scolumn 
+
+------------------------------------------------------------------------
+          |         skilllevel (low, medium, high) and bibb2012         
+placehold | ---- low ---    -- medium --    --- high ---    --- Total --
+er        |  2006   2012     2006   2012     2006   2012     2006   2012
+----------+-------------------------------------------------------------
+        1 | 0.634  0.658    0.565  0.579    1.098  1.149    0.649  0.668
+          | 1.064  1.557    1.271  1.271    1.815  1.794    1.352  1.360
+          | 0.485  0.619    0.558  0.578    0.399  0.399    0.532  0.552
+          | 0.559  0.655    0.671  0.678    0.250  0.300    0.603  0.620
+          | 0.264  0.415    0.423  0.419    0.204  0.213    0.386  0.388
+------------------------------------------------------------------------
+r; t=0.11 14:56:18
+
+. table placeholder bibb   skilllevel [aw=gew], c(mean non_routine mean non_routine_interactive  ///
+>                                                          mean routine_cognitive mean routine_manual mean non_routine_manual) ///
+>                                                          format(%7.3f) scolumn 
+
+----------------------------------------------------------------------------------------------------
+          |                      skilllevel (low, medium, high) and survey year                     
+placehold | ------- low -------    ------ medium -----    ------- high ------    ------ Total ------
+er        |  1999   2006   2012     1999   2006   2012     1999   2006   2012     1999   2006   2012
+----------+-----------------------------------------------------------------------------------------
+        1 | 0.163  0.634  0.658    0.279  0.565  0.579    0.862  1.098  1.149    0.336  0.649  0.668
+          | 0.653  1.064  1.557    1.209  1.271  1.271    2.240  1.815  1.794    1.278  1.352  1.360
+          | 0.275  0.485  0.619    0.464  0.558  0.578    0.358  0.399  0.399    0.436  0.532  0.552
+          | 0.477  0.559  0.655    0.557  0.671  0.678    0.253  0.250  0.300    0.515  0.603  0.620
+          | 0.368  0.264  0.415    0.579  0.423  0.419    0.443  0.204  0.213    0.545  0.386  0.388
+----------------------------------------------------------------------------------------------------
+r; t=0.17 14:56:18
+
+. sum index_afl*                                           
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+ index_afl_1 |     14934    .1543144    .2035529          0          1
+ index_afl_2 |     14934    .3730044    .3014461          0          1
+ index_afl_3 |     14934    .1453418    .1840869          0          1
+ index_afl_4 |     14934     .177396    .2599008          0          1
+ index_afl_5 |     14934    .1499434    .2295402          0          1
+r; t=0.00 14:56:18
+
+. table placeholder bibb skilllevel [aw=gew], ///
+>         c(mean index_afl_1 mean index_afl_2 mean index_afl_3 mean index_afl_4 mean index_afl_5 ) ///
+>         format(%7.3f) scolumn 
+
+----------------------------------------------------------------------------------------------------
+          |                      skilllevel (low, medium, high) and survey year                     
+placehold | ------- low -------    ------ medium -----    ------- high ------    ------ Total ------
+er        |  1999   2006   2012     1999   2006   2012     1999   2006   2012     1999   2006   2012
+----------+-----------------------------------------------------------------------------------------
+        1 | 0.057  0.230  0.167    0.078  0.159  0.159    0.210  0.322  0.330    0.093  0.186  0.186
+          | 0.239  0.330  0.398    0.343  0.341  0.338    0.543  0.479  0.463    0.360  0.363  0.360
+          | 0.145  0.165  0.164    0.154  0.165  0.170    0.080  0.096  0.093    0.144  0.154  0.158
+          | 0.329  0.211  0.167    0.204  0.206  0.204    0.065  0.060  0.068    0.195  0.183  0.181
+          | 0.231  0.065  0.104    0.222  0.129  0.129    0.102  0.043  0.046    0.208  0.114  0.115
+----------------------------------------------------------------------------------------------------
+r; t=0.17 14:56:18
+
+. *non-routine analytic       
+. *non-routine interactive    
+. *routine cognitive        
+. *routine manual          
+. *non-routine manual
+. do $git\6_summary_tables_skill_year
+
+. *specify varlist!
+. cap program drop table_skill_year
+r; t=0.00 14:56:18
+
+. program table_skill_year
+  1. global n: word count $`1'
+  2. di "# of vars:" $n
+  3. levelsof skilllevel, local(skilllevels)
+  4. global p1: word count `skilllevels'
+  5. levelsof bibb, local(years)
+  6. global p2: word count `years'
+  7. matrix table = J($n, $p1*$p2+3, 0)
+  8. matrix rownames table = $`1'
+  9. matrix colnames table = low99 low06 low12 med99 med06 med12 high99 high06 high12 tot99 tot06 tot12
+ 10. local i 0 
+ 11. foreach var of varlist $`1'{
+ 12.         local ++i
+ 13.         local p 0
+ 14.         di "`var' ***************"
+ 15.         foreach v of local skilllevels {
+ 16.                 foreach year of local years {
+ 17.                         local ++p
+ 18.                         di "skilllevel `v' and year `year'"
+ 19.                         sum `var' [aw=gew] if skilllevel==`v' & bibb==`year'
+ 20.                         matrix table[`i',`p'] = r(mean)
+ 21.                 }       
+ 22.         }
+ 23.         foreach year of local years {
+ 24.                 local ++p
+ 25.                 sum `var' [aw=gew] if bibb==`year' & skilllevel!=. 
+ 26.                 matrix table[`i',`p'] = r(mean)
+ 27.         }
+ 28. }   
+ 29. matrix list table , format(%7,3f) title("AFL-Index by year and skilllevel")
+ 30. end
+r; t=0.00 14:56:18
+
+. 
+. 
+end of do-file
+r; t=0.02 14:56:18
+
+. global varlist index_afl_1 index_afl_2 index_afl_3 index_afl_4 index_afl_5
+r; t=0.00 14:56:18
+
+. table_skill_year varlist  // see do-file "6_summary_tables_skill_year.do" for code.
+# of vars:5
+1 2 3
+0 1 2
+index_afl_1 ***************
+skilllevel 1 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |     487  736.988535    .0566738   .1478624          0          1
+skilllevel 1 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |      53  170733.844    .2301864    .268528          0          1
+skilllevel 1 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |     105  382861.662    .1666458   .1861467          0          1
+skilllevel 2 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |    5479  8511.35145     .078215   .1549772          0          1
+skilllevel 2 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |    3337  9120971.45    .1593029   .1980545          0          1
+skilllevel 2 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |    2746  8797925.78     .158832   .1958626          0          1
+skilllevel 3 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |     923  1290.36372    .2098505   .1904319          0          1
+skilllevel 3 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |     794  1751323.36    .3223791   .2270396          0          1
+skilllevel 3 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |     624  1707859.02    .3298949   .2270401          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |    6889  10538.7037    .0928261   .1652265          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |    4184  11043028.6    .1862612   .2126646          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_1 |    3475  10888646.5    .1859376   .2100803          0          1
+index_afl_2 ***************
+skilllevel 1 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |     487  736.988535    .2388449   .3174107          0          1
+skilllevel 1 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |      53  170733.844     .329672   .3384947          0          1
+skilllevel 1 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |     105  382861.662    .3984698   .2721002          0          1
+skilllevel 2 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |    5479  8511.35145    .3430959   .3143621          0          1
+skilllevel 2 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |    3337  9120971.45    .3413795   .2939583          0          1
+skilllevel 2 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |    2746  8797925.78    .3381039    .289139          0          1
+skilllevel 3 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |     923  1290.36372    .5429239   .2464538          0          1
+skilllevel 3 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |     794  1751323.36    .4792373   .2563337          0          1
+skilllevel 3 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |     624  1707859.02    .4633026   .2403111          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |    6889  10538.7037    .3602725    .315637          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |    4184  11043028.6    .3630615   .2933633          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_2 |    3475  10888646.5    .3598636   .2851017          0          1
+index_afl_3 ***************
+skilllevel 1 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |     487  736.988535    .1449393   .2335449          0          1
+skilllevel 1 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |      53  170733.844    .1645386   .2186776          0          1
+skilllevel 1 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |     105  382861.662    .1639902   .1736591          0          1
+skilllevel 2 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |    5479  8511.35145    .1535199   .1939494          0          1
+skilllevel 2 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |    3337  9120971.45    .1649467   .1854069          0          1
+skilllevel 2 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |    2746  8797925.78    .1699948   .1845166          0          1
+skilllevel 3 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |     923  1290.36372    .0802029   .1222262          0          1
+skilllevel 3 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |     794  1751323.36    .0957257   .1386926          0          1
+skilllevel 3 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |     624  1707859.02    .0925946   .1336164          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |    6889  10538.7037    .1439429   .1912721          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |    4184  11043028.6    .1539626   .1811168          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_3 |    3475  10888646.5    .1576436   .1792841          0          1
+index_afl_4 ***************
+skilllevel 1 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |     487  736.988535    .3288902   .3879367          0          1
+skilllevel 1 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |      53  170733.844    .2110486   .2864657          0          1
+skilllevel 1 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |     105  382861.662    .1672622   .2025448          0          1
+skilllevel 2 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |    5479  8511.35145    .2036483   .2811026          0          1
+skilllevel 2 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |    3337  9120971.45    .2058578   .2626709          0          1
+skilllevel 2 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |    2746  8797925.78    .2040022   .2496329          0          1
+skilllevel 3 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |     923  1290.36372     .064846   .1531388          0          1
+skilllevel 3 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |     794  1751323.36    .0601418   .1383177          0          1
+skilllevel 3 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |     624  1707859.02     .067821   .1397648          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |    6889  10538.7037    .1954117   .2838605          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |    4184  11043028.6    .1828288   .2531757          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_4 |    3475  10888646.5    .1813506    .239333          0          1
+index_afl_5 ***************
+skilllevel 1 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |     487  736.988535    .2306518   .3247103          0          1
+skilllevel 1 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |      53  170733.844    .0645544   .1191906          0         .5
+skilllevel 1 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |     105  382861.662    .1036319   .1969553          0          1
+skilllevel 2 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |    5479  8511.35145    .2215209   .2709641          0          1
+skilllevel 2 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |    3337  9120971.45    .1285131   .2055013          0          1
+skilllevel 2 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |    2746  8797925.78    .1290672   .2011466          0          1
+skilllevel 3 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |     923  1290.36372    .1021767   .1415308          0          1
+skilllevel 3 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |     794  1751323.36    .0425161   .0915301          0         .5
+skilllevel 3 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |     624  1707859.02     .046387   .1043231          0         .5
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |    6889  10538.7037    .2075469   .2658183          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |    4184  11043028.6    .1138859   .1935033          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ index_afl_5 |    3475  10888646.5    .1152046   .1914366          0          1
+
+table[5,12]:  AFL-Index by year and skilllevel
+              low99   low06   low12   med99   med06   med12  high99  high06  high12   tot99   tot06   tot12
+index_afl_1   0,057   0,230   0,167   0,078   0,159   0,159   0,210   0,322   0,330   0,093   0,186   0,186
+index_afl_2   0,239   0,330   0,398   0,343   0,341   0,338   0,543   0,479   0,463   0,360   0,363   0,360
+index_afl_3   0,145   0,165   0,164   0,154   0,165   0,170   0,080   0,096   0,093   0,144   0,154   0,158
+index_afl_4   0,329   0,211   0,167   0,204   0,206   0,204   0,065   0,060   0,068   0,195   0,183   0,181
+index_afl_5   0,231   0,065   0,104   0,222   0,129   0,129   0,102   0,043   0,046   0,208   0,114   0,115
+r; t=0.30 14:56:18
+
+. table placeholder bibb skilllevel [aw=gew], ///
+>         c(mean index_afl_1 mean index_afl_2 mean index_afl_3 mean index_afl_4 mean index_afl_5 ) ///
+>         format(%7.3f) scolumn 
+
+----------------------------------------------------------------------------------------------------
+          |                      skilllevel (low, medium, high) and survey year                     
+placehold | ------- low -------    ------ medium -----    ------- high ------    ------ Total ------
+er        |  1999   2006   2012     1999   2006   2012     1999   2006   2012     1999   2006   2012
+----------+-----------------------------------------------------------------------------------------
+        1 | 0.057  0.230  0.167    0.078  0.159  0.159    0.210  0.322  0.330    0.093  0.186  0.186
+          | 0.239  0.330  0.398    0.343  0.341  0.338    0.543  0.479  0.463    0.360  0.363  0.360
+          | 0.145  0.165  0.164    0.154  0.165  0.170    0.080  0.096  0.093    0.144  0.154  0.158
+          | 0.329  0.211  0.167    0.204  0.206  0.204    0.065  0.060  0.068    0.195  0.183  0.181
+          | 0.231  0.065  0.104    0.222  0.129  0.129    0.102  0.043  0.046    0.208  0.114  0.115
+----------------------------------------------------------------------------------------------------
+r; t=0.17 14:56:19
+
+. *both are equal.
+. cap mkdir $git\tables 
+r; t=0.00 14:56:19
+
+. outtable using $git/tables/table7 , mat(table) replace format(%7.3f) ///
+>                 center nobox caption("Summary Statistic AFL-Index over 3 years and 3 skilllevels.") ///
+>                 clabel("Tab:afldesc")
+r; t=0.06 14:56:19
+
+. ****************************************************************************************************
+. *** Table 8: Subjective Job Complexity SJC (averages) by skill groups for the years 2006 and 2012
+. sum sjc njc 
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+         sjc |     16021    1.136259     1.58649         -2          4
+         njc |     16091    3.363184    2.060966          0         12
+r; t=0.00 14:56:19
+
+. *in working papaer of 2009 sjc for high skilled has a reported mean of 4.6/4.7 for high skilled 
+. *-> out of range.
+. global varlist sjc njc 
+r; t=0.00 14:56:19
+
+. table_skill_year varlist  // see do-file "6_summary_tables_skill_year.do" for code.
+# of vars:2
+1 2 3
+0 1 2
+sjc ***************
+skilllevel 1 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |     667  1010.34138   -.2775078   1.322425         -2          4
+skilllevel 1 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |      56  184418.795    1.564276   1.350329         -2          4
+skilllevel 1 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |     105  375838.209     1.68287   1.205696         -1          4
+skilllevel 2 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |    5991  9302.71752    .3318073   1.457221         -2          4
+skilllevel 2 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |    3496  9602635.34     1.56033   1.366106         -2          4
+skilllevel 2 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |    2883  9274206.16    1.499955   1.356782         -2          4
+skilllevel 3 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |     948  1325.18348    1.543525    1.39162         -2          4
+skilllevel 3 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |     809  1800491.62    2.522702   1.193533         -1          4
+skilllevel 3 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |     632  1730286.65    2.462425   1.134825         -2          4
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |    7606  11638.2424     .416883     1.5038         -2          4
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |    4361  11587545.8    1.709928   1.384796         -2          4
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         sjc |    3620    11380331    1.652332   1.364531         -2          4
+njc ***************
+skilllevel 1 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |     673  1020.38791    1.936269   2.014949          0         10
+skilllevel 1 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |      56  184418.795    3.006584     1.8713          0          9
+skilllevel 1 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |     106  385078.668    3.902929   2.127676          0          9
+skilllevel 2 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |    6018  9340.51234    3.088669   2.037104          0         11
+skilllevel 2 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |    3500   9614214.2    3.487539   2.034548          0         12
+skilllevel 2 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |    2899  9323487.57    3.525914   2.027779          0         10
+skilllevel 3 and year 0
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |     955  1335.01683    4.155491    1.97798          0         10
+skilllevel 3 and year 1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |     810  1802026.79    3.765931   1.822794          0         10
+skilllevel 3 and year 2
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |     635  1742753.73    3.854403   1.890478          0         11
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |    7646  11695.9171    3.109901   2.087872          0         11
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |    4366  11600659.8    3.523138   2.003778          0         12
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+         njc |    3640    11451320    3.588584   2.014675          0         11
+
+table[2,12]:  AFL-Index by year and skilllevel
+      low99   low06   low12   med99   med06   med12  high99  high06  high12   tot99   tot06   tot12
+sjc  -0,278   1,564   1,683   0,332   1,560   1,500   1,544   2,523   2,462   0,417   1,710   1,652
+njc   1,936   3,007   3,903   3,089   3,488   3,526   4,155   3,766   3,854   3,110   3,523   3,589
+r; t=0.13 14:56:19
+
+. table placeholder bibb skilllevel [aw=gew], c(mean sjc mean njc) format(%7.4f) scolumn 
+
+----------------------------------------------------------------------------------------------------------------------------
+          |                                  skilllevel (low, medium, high) and survey year                                 
+placehold | ---------- low ----------    --------- medium --------    ---------- high ---------    --------- Total ---------
+er        |    1999     2006     2012       1999     2006     2012       1999     2006     2012       1999     2006     2012
+----------+-----------------------------------------------------------------------------------------------------------------
+        1 | -0.2775   1.5643   1.6829     0.3318   1.5603   1.5000     1.5435   2.5227   2.4624     0.4169   1.7099   1.6523
+          |  1.9363   3.0066   3.9029     3.0887   3.4875   3.5259     4.1555   3.7659   3.8544     3.1099   3.5231   3.5886
+----------------------------------------------------------------------------------------------------------------------------
+r; t=0.11 14:56:19
+
+. outtable using $git/tables/table8 , mat(table) replace format(%7.3f) center nobox ///
+>         caption("Subjective and Objective Job Complexity (averages) by skill groups for the three survey years") ///
+>         clabel("Tab:sjcdesc")
+r; t=0.06 14:56:19
+
+. *sjc
+. *njc
+. ****************************************************************************************************
+. *** basis for table3: Quantiles of log. hourly wages
+. preserve 
+r; t=0.02 14:56:19
+
+. table placeholder bibb skilllevel [aw=gew],c(p20 lhw  p50 lhw p80 lhw) replace name(quantile)
+
+--------------------------------------------------------------------------------------------------------
+          |                        skilllevel (low, medium, high) and survey year                       
+placehold | ------------ low -----------    ---------- medium ----------    ----------- high -----------
+er        |     1999      2006      2012        1999      2006      2012        1999      2006      2012
+----------+---------------------------------------------------------------------------------------------
+        1 | 2.128858  2.219854  2.331772    2.215869  2.391704  2.442997    2.503551  2.730679   2.80764
+          |  2.40976  2.576529  2.730679    2.529868  2.730679  2.779469    2.822005  3.092659  3.136144
+          | 2.661074  2.913001  3.136144    2.801802  3.138833   3.24737    3.158477  3.423826   3.54161
+--------------------------------------------------------------------------------------------------------
+r; t=0.19 14:56:19
+
+. gen quantile8020 = quantile3 - quantile1
+r; t=0.00 14:56:19
+
+. gen quantile5020 = quantile2 - quantile1
+r; t=0.00 14:56:19
+
+. gen quantile8050 = quantile3 - quantile2
+r; t=0.00 14:56:19
+
+. global varlist quantile8020 quantile8050 quantile5020  
+r; t=0.00 14:56:19
+
+. do $git\6_summary_tables_skill_year_no_weight
+
+. *specify varlist!
+. *here: no weights are used.
+. cap program drop table_skill_year_no_weight
+r; t=0.00 14:56:19
+
+. program table_skill_year_no_weight
+  1. global n: word count $`1'
+  2. di "# of vars:" $n
+  3. levelsof skilllevel, local(skilllevels)
+  4. global p1: word count `skilllevels'
+  5. levelsof bibb, local(years)
+  6. global p2: word count `years'
+  7. matrix table = J($n, $p1*$p2+3, 0)
+  8. matrix rownames table = $`1'
+  9. matrix colnames table = low99 low06 low12 med99 med06 med12 high99 high06 high12 tot99 tot06 tot12
+ 10. local i 0 
+ 11. foreach var of varlist $`1'{
+ 12.         local ++i
+ 13.         local p 0
+ 14.         di "`var' ***************"
+ 15.         foreach v of local skilllevels {
+ 16.                 foreach year of local years {
+ 17.                         local ++p
+ 18.                         di "skilllevel `v' and year `year'"
+ 19.                         sum `var' if skilllevel==`v' & bibb==`year'
+ 20.                         matrix table[`i',`p'] = r(mean)
+ 21.                 }       
+ 22.         }
+ 23.         foreach year of local years {
+ 24.                 local ++p
+ 25.                 sum `var' if bibb==`year' & skilllevel!=. 
+ 26.                 matrix table[`i',`p'] = r(mean)
+ 27.         }
+ 28. }   
+ 29. matrix list table , format(%7,3f) title("AFL-Index by year and skilllevel")
+ 30. end
+r; t=0.00 14:56:19
+
+. 
+. 
+end of do-file
+r; t=0.03 14:56:19
+
+. table_skill_year_no_weight varlist  // see do-file "6_summary_tables_skill_year.do" for code.
+# of vars:3
+1 2 3
+0 1 2
+quantile8020 ***************
+skilllevel 1 and year 0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         1    .5322168           .   .5322168   .5322168
+skilllevel 1 and year 1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         1    .6931472           .   .6931472   .6931472
+skilllevel 1 and year 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         1    .8043728           .   .8043728   .8043728
+skilllevel 2 and year 0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         1    .5859332           .   .5859332   .5859332
+skilllevel 2 and year 1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         1     .747129           .    .747129    .747129
+skilllevel 2 and year 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         1    .8043728           .   .8043728   .8043728
+skilllevel 3 and year 0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         1    .6549258           .   .6549258   .6549258
+skilllevel 3 and year 1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         1    .6931472           .   .6931472   .6931472
+skilllevel 3 and year 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         1    .7339692           .   .7339692   .7339692
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         3    .5910253    .0615128   .5322168   .6549258
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         3    .7111411    .0311664   .6931472    .747129
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8020 |         3    .7809049    .0406475   .7339692   .8043728
+quantile8050 ***************
+skilllevel 1 and year 0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         1    .2513144           .   .2513144   .2513144
+skilllevel 1 and year 1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         1    .3364723           .   .3364723   .3364723
+skilllevel 1 and year 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         1    .4054651           .   .4054651   .4054651
+skilllevel 2 and year 0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         1     .271934           .    .271934    .271934
+skilllevel 2 and year 1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         1    .4081538           .   .4081538   .4081538
+skilllevel 2 and year 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         1    .4679005           .   .4679005   .4679005
+skilllevel 3 and year 0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         1    .3364723           .   .3364723   .3364723
+skilllevel 3 and year 1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         1     .331167           .    .331167    .331167
+skilllevel 3 and year 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         1    .4054651           .   .4054651   .4054651
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         3    .2865736    .0444264   .2513144   .3364723
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         3    .3585977    .0429987    .331167   .4081538
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile8050 |         3    .4262769    .0360471   .4054651   .4679005
+quantile5020 ***************
+skilllevel 1 and year 0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         1    .2809024           .   .2809024   .2809024
+skilllevel 1 and year 1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         1    .3566749           .   .3566749   .3566749
+skilllevel 1 and year 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         1    .3989077           .   .3989077   .3989077
+skilllevel 2 and year 0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         1    .3139992           .   .3139992   .3139992
+skilllevel 2 and year 1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         1    .3389752           .   .3389752   .3389752
+skilllevel 2 and year 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         1    .3364723           .   .3364723   .3364723
+skilllevel 3 and year 0
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         1    .3184536           .   .3184536   .3184536
+skilllevel 3 and year 1
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         1    .3619802           .   .3619802   .3619802
+skilllevel 3 and year 2
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         1    .3285041           .   .3285041   .3285041
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         3    .3044517    .0205156   .2809024   .3184536
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         3    .3525434    .0120461   .3389752   .3619802
+
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+quantile5020 |         3     .354628    .0385537   .3285041   .3989077
+
+table[3,12]:  AFL-Index by year and skilllevel
+               low99   low06   low12   med99   med06   med12  high99  high06  high12   tot99   tot06   tot12
+quantile8020   0,532   0,693   0,804   0,586   0,747   0,804   0,655   0,693   0,734   0,591   0,711   0,781
+quantile8050   0,251   0,336   0,405   0,272   0,408   0,468   0,336   0,331   0,405   0,287   0,359   0,426
+quantile5020   0,281   0,357   0,399   0,314   0,339   0,336   0,318   0,362   0,329   0,304   0,353   0,355
+r; t=0.00 14:56:19
+
+. table placeholder bibb skilllevel, c(mean quantile8020 mean quantile8050 ///
+>                                                                                  mean quantile5020) format(%7.3f) scolumn 
+
+----------------------------------------------------------------------------------------------------
+          |                      skilllevel (low, medium, high) and survey year                     
+placehold | ------- low -------    ------ medium -----    ------- high ------    ------ Total ------
+er        |  1999   2006   2012     1999   2006   2012     1999   2006   2012     1999   2006   2012
+----------+-----------------------------------------------------------------------------------------
+        1 | 0.532  0.693  0.804    0.586  0.747  0.804    0.655  0.693  0.734    0.591  0.711  0.781
+          | 0.251  0.336  0.405    0.272  0.408  0.468    0.336  0.331  0.405    0.287  0.359  0.426
+          | 0.281  0.357  0.399    0.314  0.339  0.336    0.318  0.362  0.329    0.304  0.353  0.355
+----------------------------------------------------------------------------------------------------
+r; t=0.03 14:56:19
+
+. outtable using $git/tables/table3 , mat(table) replace format(%7.3f) center nobox ///
+>         caption("log hourly wages quantile differences by skill groups for the three survey years") ///
+>                 clabel("Tab:quantilsdesc")
+r; t=0.06 14:56:19
+
+. * q80-q20 = q80-q50 + q50-q20
+. save $git/data/lhwquantiles, replace
+file E:\/data/lhwquantiles.dta saved
+r; t=0.06 14:56:19
+
+. restore
+r; t=0.01 14:56:19
+
+. 
+. table placeholder bibb2012  [aw=gew], c(mean zpalter sd zpalter )
+
+------------------------------
+placehold |      bibb2012     
+er        |     2006      2012
+----------+-------------------
+        1 |  40.4112   41.5821
+          | 8.120413  8.512104
+------------------------------
+r; t=0.05 14:56:19
+
+. ****************************************************************************************************
+. recode skilllevel 2 3 = 0 , gen(lowskill)
+(14821 differences between skilllevel and lowskill)
+r; t=0.03 14:56:19
+
+. tab skilllevel lowskill
+
+skilllevel | RECODE of skilllevel
+     (low, |   (skilllevel (low,
+   medium, |    medium, high))
+     high) |         0          1 |     Total
+-----------+----------------------+----------
+       low |         0        835 |       835 
+    medium |    12,421          0 |    12,421 
+      high |     2,400          0 |     2,400 
+-----------+----------------------+----------
+     Total |    14,821        835 |    15,656 
+
+r; t=0.00 14:56:19
+
+. recode skilllevel 1 3 = 0 2 = 1 , gen(mediumskill)
+(15656 differences between skilllevel and mediumskill)
+r; t=0.03 14:56:19
+
+. tab skilllevel mediumskill 
+
+skilllevel | RECODE of skilllevel
+     (low, |   (skilllevel (low,
+   medium, |    medium, high))
+     high) |         0          1 |     Total
+-----------+----------------------+----------
+       low |       835          0 |       835 
+    medium |         0     12,421 |    12,421 
+      high |     2,400          0 |     2,400 
+-----------+----------------------+----------
+     Total |     3,235     12,421 |    15,656 
+
+r; t=0.02 14:56:19
+
+. recode skilllevel 1 2 = 0 3 = 1 , gen(highskill)
+(15656 differences between skilllevel and highskill)
+r; t=0.03 14:56:19
+
+. tab skilllevel highskill
+
+skilllevel | RECODE of skilllevel
+     (low, |   (skilllevel (low,
+   medium, |    medium, high))
+     high) |         0          1 |     Total
+-----------+----------------------+----------
+       low |       835          0 |       835 
+    medium |    12,421          0 |    12,421 
+      high |         0      2,400 |     2,400 
+-----------+----------------------+----------
+     Total |    13,256      2,400 |    15,656 
+
+r; t=0.00 14:56:19
+
+. gen zpalter_sq = zpalter * zpalter 
+r; t=0.00 14:56:19
+
+. tab occupational_categories, gen(occ)
+
+   RECODE of f100stba_ab (Erwerbsberuf: |
+                 Berufsabschnitte 1992) |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                  Agriculture, Forestry |        236        1.47        1.47
+Mining, Mineral winning, Stonery, Mater |         98        0.61        2.08
+                      Chemical industry |        198        1.23        3.31
+Paper manufacturing, paper converting,  |        164        1.02        4.33
+                  Metalworking industry |        410        2.55        6.88
+         Metal-structuring, engineering |      1,709       10.63       17.50
+                 Electrical engineering |        852        5.30       22.80
+Apparel industry, leather production an |         30        0.19       22.99
+                          food industry |        327        2.03       25.02
+       Structural and civil engineering |        551        3.43       28.44
+                   Lining, upholstering |        307        1.91       30.35
+           Wood- and plastic processing |        215        1.34       31.69
+    Painter, Vanisher, unskilled worker |        528        3.28       34.97
+    Chemists, Physicist, Mathematicians |        891        5.54       40.51
+                    Technical engineers |      1,457        9.06       49.57
+                              Merchants |        692        4.30       53.87
+                      Service merchants |        606        3.77       57.64
+                       Transport sector |      1,397        8.69       66.33
+           Organisation, Administration |      2,847       17.70       84.03
+Occupation of order and security, Artis |      2,569       15.97      100.00
+----------------------------------------+-----------------------------------
+                                  Total |     16,084      100.00
+r; t=0.02 14:56:19
+
+. ****************************************************************************************************
+. *** Table 4: 
+. * age and skill levels:
+. table placeholder bibb2012  [aw=gew], c(mean zpalter sd zpalter mean lowskill ///
+>                                                                                 mean mediumskill mean highskill) format(%7.3f)
+
+--------------------------
+placehold |    bibb2012   
+er        |   2006    2012
+----------+---------------
+        1 | 40.411  41.582
+          |  8.120   8.512
+          |  0.016   0.034
+          |  0.829   0.814
+          |  0.155   0.152
+--------------------------
+r; t=0.08 14:56:20
+
+. ** occupations:
+. table placeholder bibb2012  [aw=gew], c(mean occ1 mean occ2 mean occ3 mean occ4 mean occ5) format(%7.3f)
+
+------------------------
+placehold |   bibb2012  
+er        |  2006   2012
+----------+-------------
+        1 | 0.015  0.015
+          | 0.008  0.006
+          | 0.015  0.017
+          | 0.013  0.010
+          | 0.039  0.031
+------------------------
+r; t=0.06 14:56:20
+
+. table placeholder bibb2012  [aw=gew], c(mean occ6 mean occ7 mean occ8 mean occ9 mean occ10) format(%7.3f)
+
+------------------------
+placehold |   bibb2012  
+er        |  2006   2012
+----------+-------------
+        1 | 0.117  0.109
+          | 0.052  0.072
+          | 0.000  0.002
+          | 0.018  0.018
+          | 0.026  0.024
+------------------------
+r; t=0.05 14:56:20
+
+. table placeholder bibb2012  [aw=gew], c(mean occ11 mean occ12 mean occ13 mean occ14 mean occ15) format(%7.3f)
+
+------------------------
+placehold |   bibb2012  
+er        |  2006   2012
+----------+-------------
+        1 | 0.014  0.015
+          | 0.012  0.013
+          | 0.036  0.026
+          | 0.057  0.049
+          | 0.093  0.096
+------------------------
+r; t=0.06 14:56:20
+
+. table placeholder bibb2012  [aw=gew], c(mean occ16 mean occ17 mean occ18 mean occ19 mean occ20) format(%7.3f) 
+
+------------------------
+placehold |   bibb2012  
+er        |  2006   2012
+----------+-------------
+        1 | 0.040  0.037
+          | 0.037  0.031
+          | 0.089  0.104
+          | 0.172  0.168
+          | 0.146  0.156
+------------------------
+r; t=0.05 14:56:20
+
+. global varlist zpalter lowskill mediumskill highskill occ1 occ2 occ3 occ4 occ5 occ6 occ7 occ8 occ10 ///
+> occ11 occ12 occ13 occ14 occ15 occ16 occ17 occ18 occ19 occ20 
+r; t=0.00 14:56:20
+
+. do $git\6_summary_tables_occ
+
+. *specify varlist!
+. cap program drop table_year_occ
+r; t=0.00 14:56:20
+
+. program table_year_occ
+  1. global n: word count $`1'
+  2. di "# of vars:" $n
+  3. *levelsof skilllevel, local(skilllevels)
+. *global p1: word count `skilllevels'
+. levelsof bibb, local(years)
+  4. global p2: word count `years'
+  5. matrix table = J($n, $p2, 0)
+  6. matrix rownames table = $`1'
+  7. matrix colnames table = 1999 2006 2012
+  8. local i 0 
+  9. foreach var of varlist $`1'{
+ 10.         local ++i
+ 11.         local p 0
+ 12.         di "`var' ***************"
+ 13.         *foreach v of local skilllevels {
+.         *       foreach year of local years {
+.         *               local ++p
+.         *               di "skilllevel `v' and year `year'"
+.         *               sum `var' [aw=gew] if skilllevel==`v' & bibb==`year'
+.         *               matrix table[`i',`p'] = r(mean)
+.         *       }       
+.         *}
+.         foreach year of local years {
+ 14.                 local ++p
+ 15.                 sum `var' [aw=gew] if bibb==`year' & skilllevel!=. 
+ 16.                 matrix table[`i',`p'] = r(mean)
+ 17.         }
+ 18. }  
+ 19. matrix list table , format(%7,3f) title("summary table of means by year and skilllevel") 
+ 20. end
+r; t=0.00 14:56:20
+
+. 
+. 
+end of do-file
+r; t=0.02 14:56:20
+
+. table_year_occ varlist  // see do-file "6_summary_tables_skill_year.do" for code.
+# of vars:23
+0 1 2
+zpalter ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     zpalter |    7646  11695.9171    39.24208   8.240693         25         55
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     zpalter |    4366  11600659.8    40.43389   8.105718         25         55
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+     zpalter |    3640    11451320    41.66523    8.50533         25         55
+lowskill ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+    lowskill |    7646  11695.9171    .0872431   .2822094          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+    lowskill |    4366  11600659.8    .0158973   .1250925          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+    lowskill |    3640    11451320    .0336274    .180293          0          1
+mediumskill ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ mediumskill |    7646  11695.9171    .7986131   .4010627          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ mediumskill |    4366  11600659.8    .8287644   .3767578          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+ mediumskill |    3640    11451320    .8141845   .3890111          0          1
+highskill ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+   highskill |    7646  11695.9171    .1141438   .3180067          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+   highskill |    4366  11600659.8    .1553383   .3622684          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+   highskill |    3640    11451320     .152188   .3592524          0          1
+occ1 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ1 |    7646  11695.9171    .0158407   .1248673          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ1 |    4365  11598341.5    .0142478   .1185241          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ1 |    3635  11441519.4    .0154422   .1233206          0          1
+occ2 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ2 |    7646  11695.9171    .0069484   .0830722          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ2 |    4365  11598341.5    .0068064   .0822293          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ2 |    3635  11441519.4    .0057246   .0754544          0          1
+occ3 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ3 |    7646  11695.9171     .011469   .1064843          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ3 |    4365  11598341.5    .0139339   .1172299          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ3 |    3635  11441519.4    .0159616   .1253441          0          1
+occ4 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ4 |    7646  11695.9171    .0106439   .1026256          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ4 |    4365  11598341.5    .0120181   .1089789          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ4 |    3635  11441519.4    .0087203   .0929875          0          1
+occ5 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ5 |    7646  11695.9171    .0223058   .1476858          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ5 |    4365  11598341.5    .0341886   .1817343          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ5 |    3635  11441519.4    .0310706   .1735325          0          1
+occ6 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ6 |    7646  11695.9171    .1236589   .3292136          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ6 |    4365  11598341.5    .1199599   .3249518          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ6 |    3635  11441519.4    .1087382   .3113533          0          1
+occ7 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ7 |    7646  11695.9171    .0549104   .2278202          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ7 |    4365  11598341.5    .0517869    .221622          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ7 |    3635  11441519.4    .0724471   .2592624          0          1
+occ8 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ8 |    7646  11695.9171    .0027054   .0519462          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ8 |    4365  11598341.5    .0005083   .0225425          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+        occ8 |    3635  11441519.4    .0024916   .0498601          0          1
+occ10 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ10 |    7646  11695.9171     .052966   .2239803          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ10 |    4365  11598341.5    .0275464   .1636878          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ10 |    3635  11441519.4    .0229721    .149835          0          1
+occ11 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ11 |    7646  11695.9171    .0277151    .164166          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ11 |    4365  11598341.5    .0138686   .1169591          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ11 |    3635  11441519.4    .0159011   .1251103          0          1
+occ12 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ12 |    7646  11695.9171    .0175472   .1313073          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ12 |    4365  11598341.5    .0126408   .1117313          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ12 |    3635  11441519.4    .0137496   .1164659          0          1
+occ13 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ13 |    7646  11695.9171    .0416004   .1996872          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ13 |    4365  11598341.5    .0321469   .1764103          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ13 |    3635  11441519.4    .0251412   .1565753          0          1
+occ14 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ14 |    7646  11695.9171    .0435798   .2041716          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ14 |    4365  11598341.5    .0608869   .2391501          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ14 |    3635  11441519.4    .0513881   .2208183          0          1
+occ15 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ15 |    7646  11695.9171    .0856097   .2798051          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ15 |    4365  11598341.5    .0951679   .2934803          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ15 |    3635  11441519.4    .0965197   .2953433          0          1
+occ16 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ16 |    7646  11695.9171    .0422558   .2011854          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ16 |    4365  11598341.5    .0414807    .199422          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ16 |    3635  11441519.4     .036862   .1884488          0          1
+occ17 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ17 |    7646  11695.9171    .0355229   .1851094          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ17 |    4365  11598341.5    .0387476   .1930148          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ17 |    3635  11441519.4    .0324025   .1770909          0          1
+occ18 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ18 |    7646  11695.9171    .0937179   .2914549          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ18 |    4365  11598341.5    .0830973   .2760609          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ18 |    3635  11441519.4    .0944208   .2924535          0          1
+occ19 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ19 |    7646  11695.9171    .1389337   .3458999          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ19 |    4365  11598341.5    .1735552   .3787699          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ19 |    3635  11441519.4     .172053   .3774784          0          1
+occ20 ***************
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ20 |    7646  11695.9171    .1471886    .354317          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ20 |    4365  11598341.5    .1484813   .3556172          0          1
+
+    Variable |     Obs      Weight        Mean   Std. Dev.       Min        Max
+-------------+-----------------------------------------------------------------
+       occ20 |    3635  11441519.4    .1590981   .3658179          0          1
+
+table[23,3]:  summary table of means by year and skilllevel
+               1999    2006    2012
+    zpalter  39,242  40,434  41,665
+   lowskill   0,087   0,016   0,034
+mediumskill   0,799   0,829   0,814
+  highskill   0,114   0,155   0,152
+       occ1   0,016   0,014   0,015
+       occ2   0,007   0,007   0,006
+       occ3   0,011   0,014   0,016
+       occ4   0,011   0,012   0,009
+       occ5   0,022   0,034   0,031
+       occ6   0,124   0,120   0,109
+       occ7   0,055   0,052   0,072
+       occ8   0,003   0,001   0,002
+      occ10   0,053   0,028   0,023
+      occ11   0,028   0,014   0,016
+      occ12   0,018   0,013   0,014
+      occ13   0,042   0,032   0,025
+      occ14   0,044   0,061   0,051
+      occ15   0,086   0,095   0,097
+      occ16   0,042   0,041   0,037
+      occ17   0,036   0,039   0,032
+      occ18   0,094   0,083   0,094
+      occ19   0,139   0,174   0,172
+      occ20   0,147   0,148   0,159
+r; t=0.33 14:56:20
+
+. outtable using $git/tables/table4 , mat(table) replace format(%7.3f) ///
+>         center nobox caption("Summary Statistics personal characteristics over years") clabel("Tab:descrip_personal")
+r; t=0.06 14:56:20
+
+. ****************************************************************************************************
+. save $git\data\bibb_99_06_12.dta , replace 
+file E:\\data\bibb_99_06_12.dta saved
+r; t=0.99 14:56:21
+
+. log close 
+      name:  <unnamed>
+       log:  E:\/logs/3_1_analysis_descriptives.log
+  log type:  text
+ closed on:  20 Feb 2017, 14:56:21
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
